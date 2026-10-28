@@ -51,7 +51,7 @@ Dependencies removed: `flowbite-react`, `vis-network`, `vis-data`, `react-icons`
 
 2.0 changed a few requirements because the 1.x text and the 1.x checks disagreed. Please confirm each.
 
-1. **Scenario 1: "each PC is connected to at least one router".** This cannot be done in a ring of 12 devices with 2 routers (each router has two neighbours, so at most 4 PCs can touch one). 1.x never checked it. 2.0 drops it and asks for "a single ring of all 12 devices". If you want a router-centred requirement, a different topology is needed.
+1. **Scenario 1: "each PC is connected to at least one router".** This could not be done in a ring (each router has only two neighbours), and 1.x never checked it. **Resolved:** Scenario 1 is now a ring of **8 PCs with no routers**. Only the device counts and the ring change. The policy rules are exactly as the original brief had them: five PCs share files, those five block untrusted IPs, and every device allows web traffic.
 2. **Scenario 1: Block untrusted IP.** 1.x required it on every device; the text says "for the file-sharing PCs". 2.0 requires it on the five file-sharing PCs only.
 3. **Scenario 2: Allow web traffic.** The text says all devices; 1.x only counted devices that also had streaming on. 2.0 requires every device, as written. The star is strict: the router links to all other devices and nothing else is linked.
 4. **Scenario 3: Remote desktop** is now exactly the router and both hubs, as the text says. 1.x accepted any three devices.

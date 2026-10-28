@@ -21,9 +21,9 @@ const turnOn = (s, ids, ...policies) => policies.reduce((acc, p) => apply(acc, {
 
 export { link };
 
-/** A complete, correct solution to scenario 1 (ring). */
+/** A complete, correct solution to scenario 1 (a ring of 8 PCs). */
 export function solveFileSharing() {
-  let { s, ids } = place([...Array(10).fill('pc'), 'router', 'router']);
+  let { s, ids } = place(Array(8).fill('pc'));
   for (let i = 0; i < ids.length; i += 1) s = link(s, ids[i], ids[(i + 1) % ids.length]);
   s = apply(s, { type: 'autoIps', ipClass: 'B' });
   const sharers = ids.slice(0, 5);

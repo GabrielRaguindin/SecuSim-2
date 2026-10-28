@@ -56,12 +56,12 @@ test('ring: two separate loops fail; an isolated device fails', () => {
     { type: 'removeEdge', id: state.doc.edges.find((e) => e.a === ids[4] || e.b === ids[4]).id });
   assert.ok(failing(verdict(ring, cut)).includes('topology'));
 
-  // Two loops of six: remove the links that join them and close each half.
+  // Two loops of four: remove the links that join them and close each half.
   let two = state;
   for (const e of state.doc.edges) two = run(two, { type: 'removeEdge', id: e.id });
   const half = (list) => list.forEach((id, i) => { two = run(two, { type: 'connect', a: id, b: list[(i + 1) % list.length] }); });
-  half(ids.slice(0, 6));
-  half(ids.slice(6));
+  half(ids.slice(0, 4));
+  half(ids.slice(4));
   const result = verdict(ring, two);
   const topo = result.checks.find((c) => c.id === 'topology');
   assert.equal(topo.ok, false);
@@ -92,13 +92,12 @@ test('B-04: policy checks are device-type aware', () => {
   const remote = verdict(mesh, s).checks.find((c) => c.id === 'remote');
   assert.equal(remote.ok, false, 'three devices but the wrong three');
 
-  // Scenario 1: file transfer on a router counts against you.
+  // Scenario 1: a sixth PC with file transfer counts against you.
   const one = solveFileSharing();
-  const routerId = one.ids[10];
-  s = run(one.state, { type: 'togglePolicy', ids: [routerId], policy: 'fileTransfer', on: true });
+  s = run(one.state, { type: 'togglePolicy', ids: [one.ids[5]], policy: 'fileTransfer', on: true });
   const transfer = verdict(ring, s).checks.find((c) => c.id === 'transfer');
   assert.equal(transfer.ok, false);
-  assert.match(transfer.detail, /Router 1/);
+  assert.match(transfer.detail, /6 PCs have File transfer access, but only 5 should/);
 
   // Scenario 2: throttling a hub instead of a PC fails.
   const two = solveVideoStreaming();
@@ -184,4 +183,31 @@ test('auto-assigning the wrong class and then the right one fixes the requiremen
   assert.equal(verdict(mesh, state).checks.find((c) => c.id === 'class').ok, false);
   state = run(state, { type: 'autoIps', ipClass: 'C' });
   assert.equal(verdict(mesh, state).passed, true);
+});
+
+test('scenario 1 is a ring of eight PCs, with no routers', () => {
+  const { state, ids } = solveFileSharing();
+  assert.equal(state.doc.nodes.length, 8);
+  assert.ok(state.doc.nodes.every((n) => n.type === 'pc'));
+  assert.equal(state.doc.edges.length, 8, 'a ring of eight has eight links');
+  assert.ok(state.doc.edges.every((e) => e.cable === 'crossover'), 'PC to PC is always a crossover');
+  assert.deepEqual(ring.checks.map((c) => c.id), ['devices', 'ips', 'class', 'topology', 'cables', 'transfer', 'untrusted', 'web']);
+  assert.match(ring.goal, /ring of 8 PCs/);
+
+  // A router has no place here.
+  const withRouter = run(state, { type: 'add', nodeType: 'router', x: 5, y: 5 });
+  const devices = verdict(ring, withRouter).checks.find((c) => c.id === 'devices');
+  assert.equal(devices.ok, false);
+  assert.match(devices.detail, /Needs 8 PCs\. You have 8 PCs and 1 router/);
+
+  // Seven or nine PCs is wrong too.
+  const seven = run(state, { type: 'remove', ids: [ids[7]] });
+  assert.match(verdict(ring, seven).checks.find((c) => c.id === 'devices').detail, /Needs 8 PCs\. You have 7 PCs/);
+  const nine = run(state, { type: 'add', nodeType: 'pc', x: 5, y: 5 });
+  assert.equal(verdict(ring, nine).checks.find((c) => c.id === 'devices').ok, false);
+
+  // Exactly five share files: four or six fail.
+  const four = run(state, { type: 'togglePolicy', ids: [ids[4]], policy: 'fileTransfer', on: false });
+  assert.match(verdict(ring, four).checks.find((c) => c.id === 'transfer').detail, /4 of 5 PCs/);
+  assert.equal(verdict(ring, state).passed, true);
 });
