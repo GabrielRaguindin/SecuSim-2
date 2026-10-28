@@ -1,0 +1,27 @@
+{
+  "name": "secusim",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SecuSim 2.0: a sandbox for learning network topologies and security policies.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "jspdf": "^2.5.2",
+    "next": "14.2.5",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}
