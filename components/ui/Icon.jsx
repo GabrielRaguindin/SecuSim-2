@@ -23,6 +23,7 @@ const ICONS = {
   send: (<><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4 20-7z" /></>),
   minus: <path d="M5 12h14" />,
   play: <path d="M6 4l14 8-14 8V4z" />,
+  repeat: (<><path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><path d="M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></>),
 };
 
 export default function Icon({ name, size = 20, strokeWidth = 1.8, ...rest }) {
