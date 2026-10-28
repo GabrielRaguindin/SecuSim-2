@@ -18,9 +18,10 @@ const NO_SELECTION = { nodes: [], edge: null };
  * canvas, toolbar, device dock and the inspector sidebar.
  *
  * `net` comes from useNetwork(); `toast` from useToast().
- * A parent can pass `controllerRef` to get `{ loadDoc }` for opening saved networks.
+ * A parent can pass `controllerRef` to get `{ loadDoc }` for opening saved networks,
+ * and `trace` to show a packet travelling across the canvas.
  */
-export default function Workbench({ net, toast, disabled = false, palette, toolbarExtra, sidebarTop, controllerRef }) {
+export default function Workbench({ net, toast, disabled = false, palette, toolbarExtra, sidebarTop, controllerRef, trace = null }) {
   const { doc, dispatch, canUndo, canRedo } = net;
   const stageRef = useRef(null);
   const [size, setSize] = useState({ width: 900, height: 620 });
@@ -172,6 +173,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
           linkFrom={linkFrom}
           setLinkFrom={setLinkFrom}
           cable={cable}
+          trace={trace}
           onLinkRejected={(message) => toast.show(message)}
         />
 

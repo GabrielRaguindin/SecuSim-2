@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GlyphPaths } from '@/components/ui/DeviceGlyph';
-import { NODE_SIZE, clampToBounds } from '@/lib/network.js';
+import { NODE_SIZE, clampToBounds, edgeId } from '@/lib/network.js';
 import { isSettled, projectRelease, stepSpring, velocityFromSamples } from '@/lib/spring.js';
 import { DEVICE_ORDER } from '@/lib/devices.js';
 import { canConnect } from '@/lib/networkReducer.js';
@@ -23,7 +23,7 @@ const MAX_THROW = 2600;
  *    New links use the cable chosen in the toolbar. A link with the wrong cable for its two devices is flagged.
  *  - Shift/Cmd/Ctrl click adds to the selection. Arrow keys nudge the selection.
  */
-export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool, size, disabled, newNodeId, onLinkRejected, linkFrom, setLinkFrom, cable }) {
+export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool, size, disabled, newNodeId, onLinkRejected, linkFrom, setLinkFrom, cable, trace }) {
   const svgRef = useRef(null);
   const drag = useRef(null);
   const anim = useRef(null);
@@ -280,6 +280,37 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
   const source = linkFrom ? doc.nodes.find((n) => n.id === linkFrom) : null;
   const nodeById = new Map(doc.nodes.map((n) => [n.id, n]));
 
+  /* A packet in flight: which links it has crossed, where it is, and how it ended. */
+  const traceEdges = new Set();
+  const traceNodes = new Map();
+  let packet = null;
+  let marker = null;
+  if (trace && trace.path.length > 0) {
+    const last = trace.path.length - 1;
+    const at = Math.min(trace.step, last);
+    for (let i = 0; i < at; i += 1) traceEdges.add(edgeId(trace.path[i], trace.path[i + 1]));
+    for (let i = 0; i <= at; i += 1) traceNodes.set(trace.path[i], 'passed');
+    traceNodes.set(trace.path[at], 'current');
+    if (trace.done) {
+      if (trace.ok) traceNodes.set(trace.path[last], 'delivered');
+      else if (trace.failNode) traceNodes.set(trace.failNode, 'failed');
+      const failEdge = trace.failEdge ? doc.edges.find((e) => e.id === trace.failEdge) : null;
+      if (trace.ok) {
+        const end = nodeById.get(trace.path[last]);
+        if (end) marker = { kind: 'ok', x: end.x, y: end.y - HALF - 14 };
+      } else if (failEdge) {
+        const a = nodeById.get(failEdge.a);
+        const b = nodeById.get(failEdge.b);
+        if (a && b) marker = { kind: 'fail', x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      } else if (trace.failNode) {
+        const n = nodeById.get(trace.failNode);
+        if (n) marker = { kind: 'fail', x: n.x, y: n.y - HALF - 14 };
+      }
+    } else {
+      packet = nodeById.get(trace.path[at]) ?? null;
+    }
+  }
+
   return (
     <svg
       ref={svgRef}
@@ -312,8 +343,18 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
           const mark = wrong ? '!' : edge.cable === 'crossover' ? 'X' : null;
           return (
             <g key={edge.id}>
-              <line className="sx-edge" data-selected={selected} data-cable={edge.cable} data-wrong={wrong} x1={a.x} y1={a.y} x2={b.x} y2={b.y} />
-              {mark && (
+              <line
+                className="sx-edge"
+                data-selected={selected}
+                data-cable={edge.cable}
+                data-wrong={wrong}
+                data-trace={trace?.done && trace.failEdge === edge.id ? 'failed' : traceEdges.has(edge.id) ? 'lit' : undefined}
+                x1={a.x}
+                y1={a.y}
+                x2={b.x}
+                y2={b.y}
+              />
+              {mark && !(trace?.done && trace.failEdge === edge.id) && (
                 <g className="sx-edge__badge" data-wrong={wrong} transform={`translate(${(a.x + b.x) / 2} ${(a.y + b.y) / 2})`}>
                   <circle r="9" />
                   <text y="0.5" textAnchor="middle" dominantBaseline="central">{mark}</text>
@@ -356,6 +397,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
               data-selected={selected}
               data-dragging={draggingId === node.id}
               data-source={linkFrom === node.id}
+              data-trace={traceNodes.get(node.id)}
               style={{ transform: `translate(${node.x}px, ${node.y}px)` }}
               role="button"
               tabIndex={disabled ? -1 : 0}
@@ -387,6 +429,25 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
           );
         })}
       </g>
+
+      {(packet || marker) && (
+        <g className="sx-trace" aria-hidden="true">
+          {packet && (
+            <g className="sx-packet" style={{ transform: `translate(${packet.x}px, ${packet.y}px)` }}>
+              <circle className="sx-packet__halo" r="17" />
+              <circle className="sx-packet__core" r="7" />
+            </g>
+          )}
+          {marker && (
+            <g transform={`translate(${marker.x} ${marker.y})`}>
+              <g className="sx-trace__badge" data-kind={marker.kind}>
+                <circle r="13" />
+                <path d={marker.kind === 'ok' ? 'M-5.5 0.5l3.5 3.5l7-8' : 'M-4.5 -4.5l9 9M4.5 -4.5l-9 9'} />
+              </g>
+            </g>
+          )}
+        </g>
+      )}
     </svg>
   );
 }

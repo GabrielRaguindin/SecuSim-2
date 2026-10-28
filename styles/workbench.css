@@ -399,3 +399,46 @@
   .sx-dock { gap: 2px; padding: 6px; }
   .sx-dock__tile { width: 58px; }
 }
+
+/* ---------- A packet crossing the network (sandbox) ---------- */
+
+.sx-packet { transition: transform 0.6s var(--spring-soft); pointer-events: none; }
+.sx-packet__halo { fill: var(--accent); opacity: 0.22; }
+.sx-packet__core { fill: var(--accent); stroke: #fff; stroke-width: 2; }
+
+.sx-edge[data-trace='lit'] { stroke: var(--accent); stroke-width: 4.5; stroke-dasharray: none; opacity: 1; }
+.sx-edge[data-trace='failed'] { stroke: var(--danger); stroke-width: 4.5; }
+
+.sx-node[data-trace='passed'] .sx-node__ring { opacity: 0.55; }
+.sx-node[data-trace='current'] .sx-node__ring,
+.sx-node[data-trace='delivered'] .sx-node__ring { opacity: 1; }
+.sx-node[data-trace='delivered'] .sx-node__ring { stroke: var(--ok); }
+.sx-node[data-trace='failed'] .sx-node__ring { opacity: 1; stroke: var(--danger); }
+
+.sx-trace__badge { pointer-events: none; animation: sx-pop 0.6s var(--spring-snappy) both; transform-box: fill-box; transform-origin: center; }
+.sx-trace__badge circle { stroke: var(--canvas); stroke-width: 2.5; }
+.sx-trace__badge path { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.sx-trace__badge[data-kind='ok'] circle { fill: var(--ok); }
+.sx-trace__badge[data-kind='fail'] circle { fill: var(--danger); }
+
+.sx-packet-panel { gap: 14px; }
+.sx-packet-panel__pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: end; }
+.sx-packet-panel__swap { margin-bottom: 4px; }
+@media (max-width: 1100px) {
+  .sx-packet-panel__pair { grid-template-columns: 1fr; }
+  .sx-packet-panel__swap { justify-self: start; margin: 0; }
+}
+.sx-packet-panel .sx-select { text-overflow: ellipsis; }
+
+.sx-packetresult { display: grid; gap: 8px; padding: 14px; border-radius: var(--r-md); background: var(--surface-2); }
+.sx-packetresult[data-ok='true'] { background: var(--ok-tint); }
+.sx-packetresult[data-ok='false'] { background: var(--danger-tint); }
+.sx-packetresult__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sx-packetresult__fix { color: var(--label); }
+.sx-packetlog { display: grid; gap: 6px; margin-top: 4px; }
+.sx-packetlog li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; }
+.sx-packetlog__mark { display: grid; place-items: center; width: 16px; height: 16px; margin-top: 1px; border-radius: 50%; background: var(--ok); color: #fff; }
+.sx-packetlog li[data-ok='false'] .sx-packetlog__mark { background: var(--danger); }
+.sx-packetlog__text { color: var(--label); }
+
+.sx-packet-panel__route { margin-top: -6px; }

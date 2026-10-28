@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Workbench from '@/components/workbench/Workbench';
+import PacketPanel from './PacketPanel';
 import Sheet from '@/components/ui/Sheet';
 import Icon from '@/components/ui/Icon';
 import { useNetwork } from '@/components/hooks.js';
@@ -119,6 +120,7 @@ export default function Sandbox() {
   const toast = useToast();
   const controller = useRef(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [trace, setTrace] = useState(null);
 
   return (
     <>
@@ -127,6 +129,8 @@ export default function Sandbox() {
         toast={toast}
         palette={DEVICE_ORDER}
         controllerRef={controller}
+        trace={trace}
+        sidebarTop={<PacketPanel doc={net.doc} onTrace={setTrace} />}
         toolbarExtra={
           <>
             <span className="sx-toolbar__divider" aria-hidden="true" />
