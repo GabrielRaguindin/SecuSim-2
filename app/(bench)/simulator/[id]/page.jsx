@@ -1,5 +1,4 @@
-import { notFound } from 'next/navigation';
-import Simulator from '@/components/simulator/Simulator';
+import ScenarioRunner from '@/components/simulator/ScenarioRunner';
 import { SCENARIOS, getScenario } from '@/lib/scenarios.js';
 
 export function generateStaticParams() {
@@ -8,12 +7,12 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }) {
   const scenario = getScenario(params.id);
-  return scenario ? { title: `Scenario ${scenario.number}: ${scenario.short}` } : { title: 'Scenario not found' };
+  return scenario ? { title: `Scenario ${scenario.number}: ${scenario.short}` } : { title: 'Custom scenario' };
 }
 
 export default function ScenarioPage({ params }) {
-  const scenario = getScenario(params.id);
-  if (!scenario) notFound();
   // Only the id crosses to the client: scenarios carry check functions, which can't be serialized.
-  return <Simulator scenarioId={scenario.id} />;
+  // Built-in ids render ahead of time; any other id is looked up in the browser's saved scenarios.
+  // The key makes moving between scenarios (back and forward) start fresh instead of reusing state.
+  return <ScenarioRunner key={params.id} scenarioId={params.id} />;
 }

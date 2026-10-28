@@ -11,14 +11,14 @@ import { useNetwork } from '@/components/hooks.js';
 import { useToast } from '@/components/ui/Toast';
 import { DEVICE_ORDER } from '@/lib/devices.js';
 import { emptyDoc } from '@/lib/networkReducer.js';
-import { evaluateScenario, getScenario } from '@/lib/scenarios.js';
+import { evaluateScenario, scenarioLabel } from '@/lib/scenarios.js';
 import { saveResult } from '@/lib/storage.js';
 import { formatClock } from '@/lib/format.js';
 
 function Brief({ open, scenario, mode, onStart, onClose }) {
   return (
     <Sheet open={open} onClose={onClose} title={scenario.title} dismissible={mode === 'view'}>
-      <p className="sx-pill sx-pill--accent">Scenario {scenario.number}</p>
+      <p className="sx-pill sx-pill--accent">{scenarioLabel(scenario)}</p>
       <p className="sx-body sx-brief__story">{scenario.story}</p>
       <p className="sx-callout sx-brief__goal"><strong>Goal.</strong> {scenario.goal}</p>
 
@@ -53,8 +53,7 @@ function Brief({ open, scenario, mode, onStart, onClose }) {
   );
 }
 
-export default function Simulator({ scenarioId }) {
-  const scenario = getScenario(scenarioId);
+export default function Simulator({ scenario }) {
   const net = useNetwork();
   const toast = useToast();
   const docRef = useRef(net.doc);
@@ -130,6 +129,7 @@ export default function Simulator({ scenarioId }) {
       scenarioId: scenario.id,
       scenarioTitle: scenario.title,
       scenarioNumber: scenario.number,
+      custom: Boolean(scenario.custom),
       passed: result.passed,
       met: result.met,
       total: result.total,
@@ -154,7 +154,7 @@ export default function Simulator({ scenarioId }) {
       <div className="sx-session__top">
         <TimerRing remaining={remaining} total={scenario.timeLimit} state={phase} />
         <div>
-          <p className="sx-caption">Scenario {scenario.number}</p>
+          <p className="sx-caption">{scenarioLabel(scenario)}</p>
           <h2 className="sx-title-3">{scenario.short}</h2>
         </div>
       </div>
