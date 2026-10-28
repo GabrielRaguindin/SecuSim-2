@@ -47,7 +47,7 @@ A link between **unlike** groups needs **straight-through**. A link between **li
 
 | Scenario | New requirements |
 |---|---|
-| 1. File sharing in a ring | Class B addresses; the right cable on every link (a ring of PCs and routers is all crossover) |
+| 1. File sharing in a ring | Class B addresses; the right cable on every link (a ring of PCs, so every link is a crossover) |
 | 2. Video streaming in a star | Class C addresses; the right cable on every link (router to hubs straight-through, router to PCs crossover) |
 | 3. VoIP in a mesh | Class C addresses; the right cable on every link (a mix) |
 

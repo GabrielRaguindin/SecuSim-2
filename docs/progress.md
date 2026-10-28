@@ -28,7 +28,7 @@
 
 ## Decisions waiting for you
 
-See `MIGRATION.md`, section "Decisions that need your sign-off". The one that matters most: Scenario 1's "each PC connected to a router" is impossible in a ring of 12 with 2 routers, so 2.0 replaced it.
+See `MIGRATION.md`, section "Decisions that need your sign-off". The impossible Scenario 1 requirement ("each PC connected to a router") is resolved: Scenario 1 is now a ring of 8 PCs with no routers.
 
 ## Next actions
 

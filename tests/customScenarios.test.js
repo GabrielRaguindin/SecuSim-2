@@ -30,7 +30,7 @@ const failing = (r) => r.checks.filter((c) => !c.ok).map((c) => c.id);
 const AS_SPEC = {
   ring: spec({
     title: 'File sharing in a secure ring network',
-    devices: { router: 2, hub: 0, pc: 10, modem: 0 },
+    devices: { router: 0, hub: 0, pc: 8, modem: 0 },
     layout: { kind: 'ring', center: 'router' },
     ipClass: 'B',
     requireCabling: true,
