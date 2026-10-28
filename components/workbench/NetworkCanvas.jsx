@@ -6,6 +6,7 @@ import { NODE_SIZE, clampToBounds } from '@/lib/network.js';
 import { isSettled, projectRelease, stepSpring, velocityFromSamples } from '@/lib/spring.js';
 import { DEVICE_ORDER } from '@/lib/devices.js';
 import { canConnect } from '@/lib/networkReducer.js';
+import { cableLabel, requiredCable } from '@/lib/cabling.js';
 import { usePrefersReducedMotion } from '@/components/hooks.js';
 
 const HALF = NODE_SIZE / 2;
@@ -19,15 +20,18 @@ const MAX_THROW = 2600;
  *  - drag a device: it lifts, follows the finger, and glides to rest with the speed you let go at.
  *    Grab it again mid-glide and it stops under your finger.
  *  - Link tool: drag from one device to another, or click one then the other.
+ *    New links use the cable chosen in the toolbar. A link with the wrong cable for its two devices is flagged.
  *  - Shift/Cmd/Ctrl click adds to the selection. Arrow keys nudge the selection.
  */
-export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool, size, disabled, newNodeId, onLinkRejected, linkFrom, setLinkFrom }) {
+export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool, size, disabled, newNodeId, onLinkRejected, linkFrom, setLinkFrom, cable }) {
   const svgRef = useRef(null);
   const drag = useRef(null);
   const anim = useRef(null);
   const docRef = useRef(doc);
   const selRef = useRef(selection);
   const sizeRef = useRef(size);
+  const cableRef = useRef(cable);
+  cableRef.current = cable;
   docRef.current = doc;
   selRef.current = selection;
   sizeRef.current = size;
@@ -71,7 +75,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
       onLinkRejected?.(verdict.reason);
       return;
     }
-    dispatch({ type: 'connect', a, b });
+    dispatch({ type: 'connect', a, b, cable: cableRef.current });
   };
 
   const startMomentum = (ids, velocity) => {
@@ -303,9 +307,18 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
           const b = nodeById.get(edge.b);
           if (!a || !b) return null;
           const selected = selection.edge === edge.id;
+          const need = requiredCable(a.type, b.type);
+          const wrong = (edge.cable ?? 'straight') !== need;
+          const mark = wrong ? '!' : edge.cable === 'crossover' ? 'X' : null;
           return (
             <g key={edge.id}>
-              <line className="sx-edge" data-selected={selected} x1={a.x} y1={a.y} x2={b.x} y2={b.y} />
+              <line className="sx-edge" data-selected={selected} data-cable={edge.cable} data-wrong={wrong} x1={a.x} y1={a.y} x2={b.x} y2={b.y} />
+              {mark && (
+                <g className="sx-edge__badge" data-wrong={wrong} transform={`translate(${(a.x + b.x) / 2} ${(a.y + b.y) / 2})`}>
+                  <circle r="9" />
+                  <text y="0.5" textAnchor="middle" dominantBaseline="central">{mark}</text>
+                </g>
+              )}
               <line
                 className="sx-edge-hit"
                 x1={a.x}
@@ -318,7 +331,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
                   onSelect({ nodes: [], edge: edge.id });
                 }}
               >
-                <title>{`${a.name} to ${b.name}`}</title>
+                <title>{`${a.name} to ${b.name}: ${cableLabel(edge.cable).toLowerCase()} cable${wrong ? `, but this link needs ${cableLabel(need).toLowerCase()}` : ''}`}</title>
               </line>
             </g>
           );

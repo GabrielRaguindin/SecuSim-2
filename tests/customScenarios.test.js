@@ -4,7 +4,7 @@ import {
   LIMITS, emptySpec, normalizeSpec, validateSpec, compileScenario, buildReferenceSolution, ruleLabel,
   serializeScenario, parseScenarioFile, scenarioFileName, FILE_FORMAT,
 } from '../lib/customScenarios.js';
-import { evaluateScenario, scenarioLabel } from '../lib/scenarios.js';
+import { evaluateScenario, getScenario as getScenarioById, scenarioLabel } from '../lib/scenarios.js';
 import {
   loadCustomScenarios, saveCustomScenario, deleteCustomScenario, duplicateCustomScenario, getCustomScenario, CUSTOM_SCENARIOS_KEY,
 } from '../lib/storage.js';
@@ -32,6 +32,8 @@ const AS_SPEC = {
     title: 'File sharing in a secure ring network',
     devices: { router: 2, hub: 0, pc: 10, modem: 0 },
     layout: { kind: 'ring', center: 'router' },
+    ipClass: 'B',
+    requireCabling: true,
     rules: [
       rule({ id: 'ft', policy: 'fileTransfer', kind: 'exactly', types: ['pc'], count: 5 }),
       rule({ id: 'bu', policy: 'blockUntrusted', kind: 'dependent', requires: 'fileTransfer' }),
@@ -42,6 +44,8 @@ const AS_SPEC = {
     title: 'Optimized video streaming in a star network',
     devices: { router: 1, hub: 2, pc: 6, modem: 0 },
     layout: { kind: 'star', center: 'router' },
+    ipClass: 'C',
+    requireCabling: true,
     rules: [
       rule({ id: 'ps', policy: 'prioritizeStreaming', kind: 'ofTypes', types: ['pc'] }),
       rule({ id: 'tb', policy: 'throttleBulk', kind: 'exactly', types: ['pc'], count: 3 }),
@@ -53,6 +57,8 @@ const AS_SPEC = {
     title: 'VoIP communication in a mesh network',
     devices: { router: 1, hub: 2, pc: 3, modem: 0 },
     layout: { kind: 'mesh', center: 'router' },
+    ipClass: 'C',
+    requireCabling: true,
     rules: [
       rule({ id: 'v', policy: 'voip', kind: 'all' }),
       rule({ id: 'aw', policy: 'allowWeb', kind: 'all' }),
@@ -174,9 +180,11 @@ test('compiled scenarios look like the built-in ones', () => {
   assert.equal(c.timeLimit, 480);
   assert.ok(c.story && c.goal, 'story and goal are filled in when left blank');
   assert.match(c.goal, /full mesh of 6 devices/);
-  assert.deepEqual(c.checks.map((x) => x.id), ['devices', 'ips', 'layout', 'rule-v', 'rule-aw', 'rule-p2', 'rule-rd']);
+  assert.equal(c.checks.find((x) => x.id === 'class').label, 'Use Class C addresses (beginning 192 to 223) for every device.');
+  assert.deepEqual(c.checks.map((x) => x.id), ['devices', 'ips', 'class', 'layout', 'cables', 'rule-v', 'rule-aw', 'rule-p2', 'rule-rd']);
   const noIps = compileScenario({ ...AS_SPEC.mesh, requireIps: false });
   assert.ok(!noIps.checks.some((x) => x.id === 'ips'));
+  assert.ok(!noIps.checks.some((x) => x.id === 'class'), 'no addresses means no address-class rule');
 });
 
 test('normalizeSpec cleans damaged or hostile input', () => {
@@ -288,4 +296,71 @@ test('resolveScenario finds built-in and custom scenarios, and nothing else', ()
   assert.equal(mine.title, 'Mine');
   assert.equal(mine.id, saved.spec.id);
   assert.equal(resolveScenario('nope', store), null);
+});
+
+test('the built-ins as custom scenarios give the same checklist as the built-ins', () => {
+  const pairs = [['ring', 'file-sharing'], ['star', 'video-streaming'], ['mesh', 'voip-mesh']];
+  for (const [key, id] of pairs) {
+    const custom = compileScenario(AS_SPEC[key]);
+    const builtIn = getScenarioById(id);
+    assert.deepEqual(custom.checks.map((c) => c.id).filter((x) => ['devices', 'ips', 'class', 'cables'].includes(x)), builtIn.checks.map((c) => c.id).filter((x) => ['devices', 'ips', 'class', 'cables'].includes(x)), key);
+    assert.equal(custom.checks.find((c) => c.id === 'class').label, builtIn.checks.find((c) => c.id === 'class').label);
+    assert.equal(custom.checks.find((c) => c.id === 'cables').label, builtIn.checks.find((c) => c.id === 'cables').label);
+  }
+});
+
+test('custom scenarios: address class, same network and cabling are graded', () => {
+  const s = spec({ devices: { router: 1, hub: 0, pc: 3, server: 1, modem: 0 }, ipClass: 'B', sameNetwork: true, requireCabling: true, rules: [] });
+  const v = validateSpec(s);
+  assert.deepEqual(v.list, []);
+  const solved = buildReferenceSolution(s);
+  assert.ok(solved.nodes.every((n) => n.ip.startsWith('172.16.0.')), 'reference solution uses Class B');
+  assert.ok(solved.edges.every((e) => e.cable === 'crossover'), 'router, PCs and server are all end-type devices, so every link is a crossover');
+  assert.equal(grade(s, solved).passed, true);
+
+  // wrong class
+  const wrongClass = run(createState(solved), { type: 'autoIps', ipClass: 'C' });
+  assert.ok(failing(grade(s, wrongClass.doc)).includes('class'));
+  // two networks, same class
+  const split = run(createState(solved), { type: 'setIp', id: solved.nodes[0].id, ip: '172.17.0.5' });
+  const r = grade(s, split.doc);
+  assert.equal(r.checks.find((c) => c.id === 'network').ok, false);
+  assert.match(r.checks.find((c) => c.id === 'network').detail, /2 networks/);
+  assert.equal(r.checks.find((c) => c.id === 'class').ok, true, 'still Class B');
+  // wrong cable
+  const edge = solved.edges[0];
+  const badCable = run(createState(solved), { type: 'setCable', id: edge.id, cable: 'straight' });
+  assert.deepEqual(failing(grade(s, badCable.doc)), ['cables']);
+});
+
+test('custom scenarios: servers can be placed, counted and used as a star center', () => {
+  const s = spec({ devices: { router: 0, hub: 0, pc: 3, server: 1, modem: 0 }, layout: { kind: 'star', center: 'server' }, rules: [] });
+  assert.deepEqual(validateSpec(s).list, []);
+  assert.match(compileScenario(s).checks[0].label, /Place 3 PCs and 1 server\./);
+  assert.match(compileScenario(s).checks.find((c) => c.id === 'layout').label, /Link the server to every other device/);
+  assert.equal(grade(s, buildReferenceSolution(s)).passed, true);
+  assert.match(validateSpec(spec({ devices: { router: 0, hub: 0, pc: 3, server: 2, modem: 0 }, layout: { kind: 'star', center: 'server' }, rules: [] })).errors.layout, /exactly one server/);
+});
+
+test('custom scenarios: cabling needs links to cable', () => {
+  const v = validateSpec(spec({ layout: { kind: 'any', center: 'router' }, requireCabling: true, rules: [] }));
+  assert.equal(v.ok, false);
+  assert.match(v.errors.layout, /Cabling is graded link by link/);
+  assert.equal(validateSpec(spec({ layout: { kind: 'connected', center: 'router' }, requireCabling: true, rules: [] })).ok, true);
+});
+
+test('custom scenarios: address options switch off with addresses, and old files still load', () => {
+  const n = normalizeSpec({ title: 'x', requireIps: false, ipClass: 'B', sameNetwork: true });
+  assert.equal(n.ipClass, 'any');
+  assert.equal(n.sameNetwork, false);
+  assert.equal(normalizeSpec({ ipClass: 'Q' }).ipClass, 'any');
+  const old = normalizeSpec({ title: 'Old scenario', devices: { pc: 2, router: 1 }, layout: { kind: 'star' } });
+  assert.equal(old.ipClass, 'any');
+  assert.equal(old.requireCabling, false, 'scenarios saved before cabling existed are not suddenly stricter');
+  assert.equal(old.devices.server, 0);
+  const back = parseScenarioFile(serializeScenario(spec({ ipClass: 'A', sameNetwork: true, requireCabling: true })));
+  assert.equal(back.ok, true);
+  assert.equal(back.spec.ipClass, 'A');
+  assert.equal(back.spec.sameNetwork, true);
+  assert.equal(back.spec.requireCabling, true);
 });

@@ -145,3 +145,5 @@
 .sx-art-grid__tile { width: 56px; height: 56px; border-radius: 17px; }
 
 .sx-group__body > .sx-btn { justify-self: start; }
+
+.sx-group__body > .sx-switchrow:first-child { padding-top: 0; border-top: 0; }

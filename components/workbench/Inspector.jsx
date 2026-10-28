@@ -4,10 +4,12 @@ import { useEffect, useId, useState } from 'react';
 import DeviceGlyph from '@/components/ui/DeviceGlyph';
 import Switch from '@/components/ui/Switch';
 import Icon from '@/components/ui/Icon';
+import Segmented from '@/components/ui/Segmented';
 import { DEVICE_TYPES } from '@/lib/devices.js';
 import { POLICY_CATEGORIES } from '@/lib/policies.js';
 import { hasPolicy, validateIp } from '@/lib/networkReducer.js';
-import { normalizeIp } from '@/lib/ip.js';
+import { IP_CLASSES, IP_CLASS_IDS, describeIp, ipClassOf, nextHostIp, normalizeIp } from '@/lib/ip.js';
+import { CABLES, CABLE_IDS, cableLabel, explainCable, requiredCable } from '@/lib/cabling.js';
 
 function IpField({ node, doc, dispatch, disabled }) {
   const [draft, setDraft] = useState(node.ip);
@@ -58,6 +60,40 @@ function IpField({ node, doc, dispatch, disabled }) {
   );
 }
 
+/** Class picker and the details of the address: which class, which network, which mask. */
+function AddressDetails({ node, doc, dispatch, disabled }) {
+  const current = ipClassOf(node.ip);
+  const info = describeIp(node.ip);
+
+  const pick = (cls) => {
+    if (current === cls) return;
+    const taken = doc.nodes.filter((n) => n.id !== node.id).map((n) => n.ip).filter(Boolean);
+    const ip = nextHostIp(taken, cls);
+    if (ip) dispatch({ type: 'setIp', id: node.id, ip });
+  };
+
+  return (
+    <div className="sx-field">
+      <span className="sx-field__label">Address class</span>
+      <div className="sx-chips" role="group" aria-label="Address class">
+        {IP_CLASS_IDS.map((cls) => (
+          <button key={cls} type="button" className="sx-chip" data-on={current === cls} aria-pressed={current === cls} disabled={disabled} onClick={() => pick(cls)}>
+            <span>{IP_CLASSES[cls].label}</span>
+          </button>
+        ))}
+      </div>
+      {info ? (
+        <div className="sx-ipinfo">
+          <p className="sx-caption"><strong>{info.label}</strong>, {info.private ? 'private' : 'public'}. Network {info.network}, mask {info.mask} (/{info.prefixLength}).</p>
+          <p className="sx-caption">Broadcast address {info.broadcast}.</p>
+        </div>
+      ) : (
+        <p className="sx-caption">Pick a class for a starting address, or type your own above.</p>
+      )}
+    </div>
+  );
+}
+
 function Policies({ doc, ids, dispatch, disabled }) {
   return (
     <div className="sx-policies">
@@ -103,10 +139,27 @@ export default function Inspector({ doc, selection, dispatch, disabled, onRemove
   if (edge) {
     const a = doc.nodes.find((n) => n.id === edge.a);
     const b = doc.nodes.find((n) => n.id === edge.b);
+    const need = a && b ? requiredCable(a.type, b.type) : null;
+    const wrong = need !== null && (edge.cable ?? 'straight') !== need;
     return (
       <section className="sx-panel" aria-label="Selected link">
         <h3 className="sx-title-3">Link</h3>
         <p className="sx-body sx-inspector__text">{a?.name} is linked to {b?.name}.</p>
+        <div className="sx-field">
+          <span className="sx-field__label">Cable</span>
+          <Segmented
+            label="Cable type"
+            options={CABLE_IDS.map((id) => ({ value: id, label: CABLES[id].label }))}
+            value={edge.cable ?? 'straight'}
+            onChange={(cable) => { if (!disabled) dispatch({ type: 'setCable', id: edge.id, cable }); }}
+          />
+        </div>
+        {a && b && (
+          <p className="sx-caption sx-cablenote" data-wrong={wrong} role="status">
+            <strong>{wrong ? `Wrong cable. This link needs ${cableLabel(need).toLowerCase()}. ` : 'Right cable. '}</strong>
+            {explainCable(a.type, b.type)}
+          </p>
+        )}
         <button type="button" className="sx-btn sx-btn--danger sx-btn--block" disabled={disabled} onClick={() => onRemoveEdge(edge.id)}>
           <Icon name="trash" size={18} /> Remove link
         </button>
@@ -146,7 +199,10 @@ export default function Inspector({ doc, selection, dispatch, disabled, onRemove
       </header>
 
       {single ? (
-        <IpField node={single} doc={doc} dispatch={dispatch} disabled={disabled} />
+        <>
+          <IpField node={single} doc={doc} dispatch={dispatch} disabled={disabled} />
+          <AddressDetails node={single} doc={doc} dispatch={dispatch} disabled={disabled} />
+        </>
       ) : (
         <p className="sx-caption">Select a single device to set its IP address.</p>
       )}

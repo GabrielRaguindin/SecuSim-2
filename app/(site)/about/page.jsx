@@ -7,6 +7,7 @@ const SHORTCUTS = [
   ['V', 'Select and move tool'],
   ['L', 'Link tool'],
   ['Delete', 'Remove the selection'],
+  ['C', 'Switch the cable used for new links'],
   ['Ctrl or ⌘ + Z', 'Undo'],
   ['Shift + Ctrl or ⌘ + Z', 'Redo'],
   ['Ctrl or ⌘ + A', 'Select every device'],
