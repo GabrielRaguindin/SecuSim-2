@@ -80,7 +80,7 @@ test('B-02: deleted devices leave no trace in policy checks', () => {
 
 test('B-03: re-assigning IPs mid-way does not lose policies', () => {
   const { state, ids } = solveVideoStreaming();
-  const s = run(state, { type: 'setIp', id: ids[3], ip: '172.16.0.50' }, { type: 'setIp', id: ids[3], ip: '172.16.0.51' });
+  const s = run(state, { type: 'setIp', id: ids[3], ip: '192.168.1.200' }, { type: 'setIp', id: ids[3], ip: '192.168.1.201' });
   assert.equal(verdict(star, s).passed, true);
 });
 
@@ -154,4 +154,34 @@ test('scenario 1: block untrusted is only required on the file-sharing PCs', () 
   // A sharing PC without it is not.
   const bad = run(state, { type: 'togglePolicy', ids: [ids[0]], policy: 'blockUntrusted', on: false });
   assert.equal(verdict(ring, bad).checks.find((c) => c.id === 'untrusted').ok, false);
+});
+
+test('address class: the right class passes, the wrong one names the devices and the range', () => {
+  const { state, ids } = solveFileSharing(); // Class B
+  assert.equal(verdict(ring, state).checks.find((c) => c.id === 'class').ok, true);
+
+  const wrong = run(state, { type: 'setIp', id: ids[0], ip: '192.168.1.200' }, { type: 'setIp', id: ids[1], ip: '10.0.0.200' });
+  const c = verdict(ring, wrong).checks.find((x) => x.id === 'class');
+  assert.equal(c.ok, false);
+  assert.match(c.detail, /PC 1 and PC 2 aren’t in Class B/);
+  assert.match(c.detail, /128 to 191/);
+
+  // Scenarios 2 and 3 want Class C, so the Class B solution of scenario 1 would not do.
+  const star2 = solveVideoStreaming().state;
+  const asB = run(star2, { type: 'autoIps', ipClass: 'B' });
+  assert.deepEqual(failing(verdict(star, asB)), ['class']);
+});
+
+test('address class: a device without an address is asked for one, not misreported', () => {
+  const { state, ids } = solveVoipMesh();
+  const s = run(state, { type: 'setIp', id: ids[0], ip: '' });
+  assert.match(verdict(mesh, s).checks.find((c) => c.id === 'class').detail, /Router 1 still needs an IP/);
+});
+
+test('auto-assigning the wrong class and then the right one fixes the requirement', () => {
+  let { state } = solveVoipMesh();
+  state = run(state, { type: 'autoIps', ipClass: 'A' });
+  assert.equal(verdict(mesh, state).checks.find((c) => c.id === 'class').ok, false);
+  state = run(state, { type: 'autoIps', ipClass: 'C' });
+  assert.equal(verdict(mesh, state).passed, true);
 });

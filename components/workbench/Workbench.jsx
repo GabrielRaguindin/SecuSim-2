@@ -5,6 +5,7 @@ import NetworkCanvas from './NetworkCanvas';
 import DeviceDock from './DeviceDock';
 import Toolbar from './Toolbar';
 import Inspector from './Inspector';
+import AddressPlan from './AddressPlan';
 import { ToastRegion } from '@/components/ui/Toast';
 import { clampToBounds, fitToBounds, nextFreeSpot } from '@/lib/network.js';
 import { normalizeDoc } from '@/lib/networkReducer.js';
@@ -24,6 +25,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
   const stageRef = useRef(null);
   const [size, setSize] = useState({ width: 900, height: 620 });
   const [tool, setTool] = useState('select');
+  const [cable, setCable] = useState('straight');
   const [selection, setSelection] = useState(NO_SELECTION);
   const [linkFrom, setLinkFrom] = useState(null);
   const [newNodeId, setNewNodeId] = useState(null);
@@ -109,6 +111,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
     removeSelection,
     hasSelection: selection.nodes.length > 0 || Boolean(selection.edge),
     chooseTool,
+    toggleCable: () => setCable((c) => (c === 'straight' ? 'crossover' : 'straight')),
     clear: () => {
       setSelection(NO_SELECTION);
       chooseTool('select');
@@ -141,6 +144,8 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
         k.chooseTool('select');
       } else if (!mod && !e.altKey && key === 'l') {
         k.chooseTool('link');
+      } else if (!mod && !e.altKey && key === 'c') {
+        k.toggleCable();
       } else if (e.key === 'Escape') {
         k.clear();
       }
@@ -166,6 +171,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
           newNodeId={newNodeId}
           linkFrom={linkFrom}
           setLinkFrom={setLinkFrom}
+          cable={cable}
           onLinkRejected={(message) => toast.show(message)}
         />
 
@@ -179,6 +185,8 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
         <Toolbar
           tool={tool}
           setTool={chooseTool}
+          cable={cable}
+          setCable={setCable}
           canUndo={canUndo}
           canRedo={canRedo}
           onUndo={() => dispatch({ type: 'undo' })}
@@ -186,9 +194,9 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
           canDelete={selection.nodes.length > 0 || Boolean(selection.edge)}
           onDelete={removeSelection}
           hasNodes={doc.nodes.length > 0}
-          onAutoIps={() => {
-            dispatch({ type: 'autoIps' });
-            toast.show('Gave every device an IP address.', undoAction());
+          onAutoIps={(ipClass) => {
+            dispatch({ type: 'autoIps', ipClass });
+            toast.show(`Gave every device a Class ${ipClass} address.`, undoAction());
           }}
           onClear={() => {
             dispatch({ type: 'clear' });
@@ -220,6 +228,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
           onRemoveNodes={removeNodes}
           onRemoveEdge={removeEdge}
         />
+        <AddressPlan doc={doc} />
       </aside>
 
       <ToastRegion toast={toast.toast} onHide={toast.hide} />

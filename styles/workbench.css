@@ -234,6 +234,7 @@
 [data-type='router'] { --tile: var(--dev-router); --tile-top: var(--dev-router-top); }
 [data-type='hub'] { --tile: var(--dev-hub); --tile-top: var(--dev-hub-top); }
 [data-type='pc'] { --tile: var(--dev-pc); --tile-top: var(--dev-pc-top); }
+[data-type='server'] { --tile: var(--dev-server); --tile-top: var(--dev-server-top); }
 [data-type='modem'] { --tile: var(--dev-modem); --tile-top: var(--dev-modem-top); }
 
 /* ---------- Inspector ---------- */
@@ -310,3 +311,91 @@
 /* Toasts on workbench pages sit above the dock instead of covering it. */
 .sx-bench .sx-toast-region { bottom: calc(132px + env(safe-area-inset-bottom)); }
 @media (max-width: 960px) { .sx-bench .sx-toast-region { bottom: calc(24px + env(safe-area-inset-bottom)); } }
+
+/* ---------- Cables ---------- */
+
+.sx-edge[data-cable='crossover'] { stroke-dasharray: 10 6; }
+.sx-edge[data-wrong='true'] { stroke: var(--warn); }
+.sx-edge[data-selected='true'] { stroke: var(--edge-active); }
+.sx-edge__badge circle { fill: var(--surface); stroke: var(--edge); stroke-width: 1.5; }
+.sx-edge__badge text { fill: var(--label-2); font: 700 10px var(--font); pointer-events: none; }
+.sx-edge__badge[data-wrong='true'] circle { fill: var(--warn); stroke: var(--canvas); stroke-width: 2; }
+.sx-edge__badge[data-wrong='true'] text { fill: #fff; }
+.sx-edge__badge { pointer-events: none; }
+
+.sx-cablesel { display: inline-flex; padding: 2px; border-radius: 999px; background: var(--surface-2); }
+.sx-cablesel__btn {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--label-2);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s, transform 0.45s var(--spring-snappy);
+}
+.sx-cablesel__btn:active { transform: scale(0.95); transition-duration: 0.1s; }
+.sx-cablesel__btn[aria-pressed='true'] { background: var(--surface); color: var(--label); box-shadow: var(--shadow-1), 0 0 0 0.5px var(--separator); }
+.sx-cablesel__btn[disabled] { opacity: 0.4; pointer-events: none; }
+.sx-cablesel__label { padding: 0 6px 0 4px; font-size: 0.75rem; font-weight: 600; color: var(--label-3); }
+
+.sx-toolbar { flex-wrap: wrap; }
+.sx-toolbar__group { position: relative; }
+
+/* ---------- Auto-assign menu ---------- */
+
+.sx-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: 2px;
+  min-width: 260px;
+  padding: 6px;
+  border-radius: var(--r-md);
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
+  box-shadow: var(--shadow-3), 0 0 0 0.5px var(--separator);
+  transform-origin: top right;
+  animation: sx-menu-in 0.45s var(--spring-soft) both;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sx-menu { background: var(--surface); }
+}
+@keyframes sx-menu-in { from { opacity: 0; transform: translateY(-6px) scale(0.96); } to { opacity: 1; transform: none; } }
+.sx-menu__title { padding: 8px 12px 4px; font-size: 0.75rem; font-weight: 600; color: var(--label-3); }
+.sx-menu__item {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--label);
+  text-align: left;
+  transition: background-color 0.15s;
+}
+.sx-menu__item:hover, .sx-menu__item:focus-visible { background: var(--accent-tint); }
+.sx-menu__item small { color: var(--label-2); font-size: 0.75rem; }
+
+/* ---------- Addressing: class picker, details, plan ---------- */
+
+.sx-ipinfo { display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); }
+.sx-plan { gap: 14px; }
+.sx-plan__group { display: grid; gap: 6px; }
+.sx-plan__head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sx-plan__list { display: grid; }
+.sx-plan__list li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 0.875rem; }
+.sx-plan__list li + li { border-top: 1px solid var(--separator); }
+.sx-cablenote { padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); color: var(--label-2); }
+.sx-cablenote[data-wrong='true'] { background: var(--warn-tint); color: var(--warn); }
+.sx-cablenote strong { color: inherit; }
+
+@media (max-width: 640px) {
+  .sx-dock { gap: 2px; padding: 6px; }
+  .sx-dock__tile { width: 58px; }
+}

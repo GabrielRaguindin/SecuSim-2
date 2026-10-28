@@ -168,3 +168,34 @@
 .sx-shortcuts__row { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: center; padding: 10px 0; }
 .sx-shortcuts__row + .sx-shortcuts__row { border-top: 1px solid var(--separator); }
 .sx-shortcuts kbd { display: inline-block; padding: 3px 10px; border-radius: 8px; background: var(--surface); box-shadow: var(--shadow-1), 0 0 0 0.5px var(--separator); font: 600 0.8125rem var(--font); letter-spacing: 0; }
+
+/* ---------- Learn: addressing and cabling ---------- */
+
+.sx-classes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.sx-classes--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sx-class { display: grid; align-content: start; gap: 12px; padding: 28px; border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1), 0 0 0 0.5px var(--separator); }
+.sx-class__letter { font-size: 3.5rem; line-height: 1; font-weight: 700; letter-spacing: -0.04em; color: var(--accent); }
+.sx-class .sx-facts { margin-top: 4px; }
+.sx-facts__row--tight { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); padding: 9px 0; }
+@media (max-width: 900px) { .sx-classes, .sx-classes--two { grid-template-columns: 1fr; } }
+
+.sx-cablesketch { width: 160px; height: 40px; overflow: visible; }
+.sx-cablesketch line { stroke: var(--label-2); stroke-width: 3; stroke-linecap: round; }
+.sx-cablesketch line[data-cable='crossover'] { stroke-dasharray: 10 6; }
+.sx-cablesketch circle { fill: var(--accent); }
+
+.sx-matrixwrap { overflow-x: auto; border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-1), 0 0 0 0.5px var(--separator); }
+.sx-matrix { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.sx-matrix th, .sx-matrix td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--separator); }
+.sx-matrix thead th { font-weight: 600; color: var(--label-2); }
+.sx-matrix tbody tr:last-child th, .sx-matrix tbody tr:last-child td { border-bottom: 0; }
+.sx-matrix th span:last-child { display: block; margin-top: 4px; }
+.sx-matrix tbody th { text-align: left; white-space: nowrap; display: table-cell; }
+.sx-matrix tbody th span:last-child { display: inline; margin: 0 0 0 8px; }
+.sx-matrix__dev { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; color: #fff; background: linear-gradient(160deg, var(--tile-top), var(--tile)); vertical-align: middle; }
+.sx-matrix td { font-weight: 600; }
+.sx-matrix td[data-cable='straight'] { color: var(--accent); }
+.sx-matrix td[data-cable='crossover'] { color: var(--label); background: var(--surface-2); }
+
+.sx-lesson--stack { grid-template-columns: 1fr; align-items: start; }
+.sx-lesson--stack:nth-of-type(even) .sx-lesson__text { order: 0; }

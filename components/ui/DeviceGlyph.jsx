@@ -23,6 +23,14 @@ export function GlyphPaths({ type }) {
           <path d="M8 20h8M12 16v4" />
         </>
       );
+    case 'server':
+      return (
+        <>
+          <rect x="3" y="3.5" width="18" height="7" rx="2" />
+          <rect x="3" y="13.5" width="18" height="7" rx="2" />
+          <path d="M7 7h.01M7 17h.01M11 7h.01M11 17h.01" />
+        </>
+      );
     case 'modem':
       return (
         <>

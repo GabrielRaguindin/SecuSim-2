@@ -46,6 +46,8 @@
   --dev-hub-top: #c186ee;
   --dev-pc: #55677c;
   --dev-pc-top: #7e90a6;
+  --dev-server: #1f9d6b;
+  --dev-server-top: #4cc596;
   --dev-modem: #ff9500;
   --dev-modem-top: #ffbb4d;
 
@@ -118,6 +120,8 @@
     --dev-hub-top: #c58cf0;
     --dev-pc: #697c92;
     --dev-pc-top: #8fa2b8;
+    --dev-server: #2fb27e;
+    --dev-server-top: #66d6a6;
     --dev-modem: #ff9f0a;
     --dev-modem-top: #ffc14d;
 

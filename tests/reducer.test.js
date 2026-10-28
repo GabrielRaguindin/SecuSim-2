@@ -142,3 +142,43 @@ test('normalizeDoc repairs bad input', () => {
   assert.equal(doc.seq, 8, 'seq moves past the highest id');
   assert.equal(normalizeDoc(null).nodes.length, 0);
 });
+
+test('auto-assign gives every device an address in the chosen class (A, B or C)', () => {
+  for (const [cls, prefix] of [['A', '10.0.0.'], ['B', '172.16.0.'], ['C', '192.168.1.']]) {
+    const { state } = base();
+    const s = run(state, { type: 'autoIps', ipClass: cls });
+    assert.deepEqual(s.doc.nodes.map((n) => n.ip), [`${prefix}1`, `${prefix}2`, `${prefix}3`], cls);
+  }
+  const { state } = base();
+  assert.equal(run(state, { type: 'autoIps' }).doc.nodes[0].ip, '192.168.1.1', 'Class C is the default');
+  assert.equal(run(state, { type: 'autoIps', ipClass: 'Z' }).doc.nodes[0].ip, '192.168.1.1', 'unknown classes fall back to C');
+});
+
+test('auto-assign keeps addresses already in the class and moves the rest', () => {
+  const { state, ids } = base();
+  let s = run(state, { type: 'setIp', id: ids[0], ip: '10.0.0.50' }, { type: 'setIp', id: ids[1], ip: '192.168.1.9' });
+  s = run(s, { type: 'autoIps', ipClass: 'A' });
+  assert.equal(s.doc.nodes[0].ip, '10.0.0.50', 'already Class A, so it keeps its address');
+  assert.match(s.doc.nodes[1].ip, /^10\.0\.0\./, 'moved into Class A');
+  assert.match(s.doc.nodes[2].ip, /^10\.0\.0\./);
+  const ips = s.doc.nodes.map((n) => n.ip);
+  assert.equal(new Set(ips).size, ips.length, 'no duplicates');
+  assert.equal(run(s, { type: 'autoIps', ipClass: 'A' }), s, 'running it again changes nothing');
+});
+
+test('devices can’t be given network, broadcast, loopback or multicast addresses', () => {
+  const { state, ids } = base();
+  for (const ip of ['192.168.1.0', '192.168.1.255', '10.0.0.0', '10.255.255.255', '127.0.0.1', '224.0.0.1', '250.1.1.1', '0.1.2.3']) {
+    assert.ok(validateIp(state.doc, ids[0], ip), `${ip} is refused with a reason`);
+    assert.equal(run(state, { type: 'setIp', id: ids[0], ip }), state, `${ip} is not saved`);
+  }
+  assert.equal(run(state, { type: 'setIp', id: ids[0], ip: '172.16.0.1' }).doc.nodes[0].ip, '172.16.0.1');
+});
+
+test('saved networks lose addresses a device can’t have, and keep the rest', () => {
+  const doc = normalizeDoc({ nodes: [
+    { id: 'n1', type: 'pc', x: 1, y: 1, ip: '192.168.1.255' },
+    { id: 'n2', type: 'pc', x: 2, y: 2, ip: '192.168.1.20' },
+  ] });
+  assert.deepEqual(doc.nodes.map((n) => n.ip), ['', '192.168.1.20']);
+});

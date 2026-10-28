@@ -11,6 +11,7 @@ import DeviceGlyph from '@/components/ui/DeviceGlyph';
 import { ToastRegion, useToast } from '@/components/ui/Toast';
 import { DEVICE_ORDER, DEVICE_TYPES } from '@/lib/devices.js';
 import { POLICY_CATEGORIES } from '@/lib/policies.js';
+import { IP_CLASSES } from '@/lib/ip.js';
 import {
   LAYOUTS, LIMITS, RULE_KINDS, compileScenario, emptySpec, ruleLabel, totalDevices, validateSpec,
 } from '@/lib/customScenarios.js';
@@ -313,12 +314,47 @@ export default function ScenarioBuilder({ scenarioId = null }) {
               <p className="sx-caption">A mesh of {total} devices needs {(total * (total - 1)) / 2} links.</p>
             )}
             {show(check.errors.layout) && <p className="sx-field__error" role="alert">{check.errors.layout}</p>}
+          </Group>
+
+          <Group title="Addresses and cables" hint="Grade how the devices are addressed and wired.">
             <div className="sx-switchrow">
               <div>
                 <p className="sx-callout"><strong>Every device needs its own IP address</strong></p>
                 <p className="sx-caption">Turn this off if the exercise is only about links and policies.</p>
               </div>
               <Switch label="Require IP addresses" checked={draft.requireIps} onChange={(on) => patch({ requireIps: on })} />
+            </div>
+            {draft.requireIps && (
+              <>
+                <div className="sx-field">
+                  <span className="sx-field__label">Address class</span>
+                  <Segmented
+                    label="Address class"
+                    options={[{ value: 'any', label: 'Any' }, ...Object.values(IP_CLASSES).map((c) => ({ value: c.id, label: c.label }))]}
+                    value={draft.ipClass}
+                    onChange={(ipClass) => patch({ ipClass })}
+                  />
+                  <p className="sx-caption">
+                    {draft.ipClass === 'any'
+                      ? 'Any valid address will do.'
+                      : `Every address must begin with ${IP_CLASSES[draft.ipClass].first[0]} to ${IP_CLASSES[draft.ipClass].first[1]}. ${IP_CLASSES[draft.ipClass].use}.`}
+                  </p>
+                </div>
+                <div className="sx-switchrow">
+                  <div>
+                    <p className="sx-callout"><strong>All devices on the same network</strong></p>
+                    <p className="sx-caption">Their addresses must share one network number, using each class’s default mask.</p>
+                  </div>
+                  <Switch label="Require one network" checked={draft.sameNetwork} onChange={(on) => patch({ sameNetwork: on })} />
+                </div>
+              </>
+            )}
+            <div className="sx-switchrow">
+              <div>
+                <p className="sx-callout"><strong>Use the right cable on every link</strong></p>
+                <p className="sx-caption">Straight-through between unlike devices, crossover between like ones. Needs a layout, so there are links to check.</p>
+              </div>
+              <Switch label="Require the right cables" checked={draft.requireCabling} onChange={(on) => patch({ requireCabling: on })} />
             </div>
           </Group>
 
