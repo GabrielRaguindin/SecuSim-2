@@ -44,13 +44,14 @@ export default function Home() {
         <Link href="/simulator" className="sx-tile sx-tile--full">
           <div>
             <p className="sx-caption">Simulate</p>
-            <h2 className="sx-title-2">Three timed scenarios</h2>
-            <p className="sx-body">Each one comes with a short brief and a checklist. Build to spec before the clock runs out.</p>
+            <h2 className="sx-title-2">Timed scenarios</h2>
+            <p className="sx-body">Each one comes with a short brief and a checklist. Build to spec before the clock runs out, or write a scenario of your own.</p>
           </div>
           <ul className="sx-tile__chips">
             {SCENARIOS.map((s) => (
               <li key={s.id} className="sx-pill">{s.short}</li>
             ))}
+            <li className="sx-pill sx-pill--accent">Build your own</li>
           </ul>
           <span className="sx-tile__go" aria-hidden="true"><Icon name="chevronRight" size={20} /></span>
         </Link>

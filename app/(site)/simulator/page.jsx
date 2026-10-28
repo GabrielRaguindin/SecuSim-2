@@ -11,7 +11,7 @@ export default function SimulatorPage() {
       <header className="sx-pagehead">
         <h1 className="sx-display">Simulator</h1>
         <p className="sx-lead">
-          Each scenario gives you a brief, a list of requirements and a clock. Build the network, set the policies, then check your work.
+          Each scenario gives you a brief, a list of requirements and a clock. Build the network, set the policies, then check your work. Pick one below, or write your own.
         </p>
       </header>
       <ScenarioList />

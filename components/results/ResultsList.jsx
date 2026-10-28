@@ -61,7 +61,7 @@ export default function ResultsList() {
             <details className="sx-result">
               <summary className="sx-result__summary">
                 <div className="sx-result__main">
-                  <p className="sx-caption">Scenario {r.scenarioNumber}</p>
+                  <p className="sx-caption">{r.scenarioNumber ? `Scenario ${r.scenarioNumber}` : 'Custom scenario'}</p>
                   <h2 className="sx-title-3">{r.scenarioTitle}</h2>
                   <p className="sx-caption">
                     {formatDate(r.createdAt)}. {formatDuration(r.secondsUsed)} of {formatDuration(r.timeLimit)}

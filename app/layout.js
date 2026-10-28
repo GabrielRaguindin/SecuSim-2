@@ -2,6 +2,7 @@ import '../styles/tokens.css';
 import '../styles/ui.css';
 import '../styles/workbench.css';
 import '../styles/pages.css';
+import '../styles/builder.css';
 import SiteNav from '@/components/shell/SiteNav';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
