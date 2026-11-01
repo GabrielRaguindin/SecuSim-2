@@ -4,6 +4,8 @@
 
 A fifth device, `server`, in `lib/devices.js`. It appears in the dock, the sandbox, the custom scenario builder (as a device count and as a star center) and the cabling rules. It is an end device: for cabling it behaves like a PC. The built-in scenarios do not use one, so their device counts are unchanged.
 
+**The hub is the exception.** It works at Layer 1, so it has no IP address and can't hold a policy. Everything below about addresses and policies applies to every device *except* the hub. See `layer1-hubs.md`.
+
 ## IP classes (`lib/ip.js`)
 
 A device's class is **worked out from its address, never stored**, so the two cannot drift apart.
@@ -48,8 +50,8 @@ A link between **unlike** groups needs **straight-through**. A link between **li
 | Scenario | New requirements |
 |---|---|
 | 1. File sharing in a ring | Class B addresses; the right cable on every link (a ring of PCs, so every link is a crossover) |
-| 2. Video streaming in a star | Class C addresses; the right cable on every link (router to hubs straight-through, router to PCs crossover) |
-| 3. VoIP in a mesh | Class C addresses; the right cable on every link (a mix) |
+| 2. Video streaming in a star | Class C addresses; the right cable on every link (router to modem straight-through, router to server and PCs crossover) |
+| 3. VoIP in a mesh | Class C addresses; the right cable on every link (the modem straight-through to every other device, everything else crossover) |
 
 ## Custom scenarios
 

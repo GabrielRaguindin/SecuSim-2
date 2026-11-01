@@ -323,7 +323,7 @@
 .sx-edge__badge[data-wrong='true'] text { fill: #fff; }
 .sx-edge__badge { pointer-events: none; }
 
-.sx-cablesel { display: inline-flex; padding: 2px; border-radius: 999px; background: var(--surface-2); }
+.sx-cablesel { display: inline-flex; align-items: center; padding: 2px; border-radius: 999px; background: var(--surface-2); }
 .sx-cablesel__btn {
   padding: 6px 12px;
   border: 0;
@@ -338,7 +338,7 @@
 .sx-cablesel__btn:active { transform: scale(0.95); transition-duration: 0.1s; }
 .sx-cablesel__btn[aria-pressed='true'] { background: var(--surface); color: var(--label); box-shadow: var(--shadow-1), 0 0 0 0.5px var(--separator); }
 .sx-cablesel__btn[disabled] { opacity: 0.4; pointer-events: none; }
-.sx-cablesel__label { padding: 0 6px 0 4px; font-size: 0.75rem; font-weight: 600; color: var(--label-3); }
+.sx-cablesel__label { padding: 0 4px 0 8px; font-size: 0.75rem; font-weight: 600; color: var(--label-3); }
 
 .sx-toolbar { flex-wrap: wrap; }
 .sx-toolbar__group { position: relative; }
@@ -442,3 +442,7 @@
 .sx-packetlog__text { color: var(--label); }
 
 .sx-packet-panel__route { margin-top: -6px; }
+
+/* ---------- A Layer 1 device (hub) in the inspector ---------- */
+
+.sx-layer1 { display: grid; gap: 4px; padding: 12px 14px; border-radius: var(--r-sm); background: var(--surface-2); }

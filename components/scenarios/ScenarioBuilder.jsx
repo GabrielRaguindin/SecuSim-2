@@ -9,7 +9,7 @@ import Stepper from '@/components/ui/Stepper';
 import Switch from '@/components/ui/Switch';
 import DeviceGlyph from '@/components/ui/DeviceGlyph';
 import { ToastRegion, useToast } from '@/components/ui/Toast';
-import { DEVICE_ORDER, DEVICE_TYPES } from '@/lib/devices.js';
+import { DEVICE_ORDER, DEVICE_TYPES, canHavePolicies } from '@/lib/devices.js';
 import { POLICY_CATEGORIES } from '@/lib/policies.js';
 import { IP_CLASSES } from '@/lib/ip.js';
 import {
@@ -47,11 +47,12 @@ function Group({ title, hint, aside, children }) {
 
 function RuleCard({ rule, spec, error, onChange, onRemove }) {
   const info = RULE_KINDS.find((k) => k.id === rule.kind);
-  const visibleTypes = DEVICE_ORDER.filter((t) => spec.devices[t] > 0 || rule.types.includes(t));
+  // Hubs work at Layer 1 and can't hold a policy, so a rule never offers them.
+  const visibleTypes = DEVICE_ORDER.filter((t) => canHavePolicies(t) && (spec.devices[t] > 0 || rule.types.includes(t)));
 
   const changeKind = (kind) => {
     const next = RULE_KINDS.find((k) => k.id === kind);
-    const types = next.needsTypes && rule.types.length === 0 ? DEVICE_ORDER.filter((t) => spec.devices[t] > 0).slice(0, 1) : rule.types;
+    const types = next.needsTypes && rule.types.length === 0 ? DEVICE_ORDER.filter((t) => canHavePolicies(t) && spec.devices[t] > 0).slice(0, 1) : rule.types;
     onChange({ kind, types });
   };
   const toggleType = (type) =>
@@ -360,7 +361,7 @@ export default function ScenarioBuilder({ scenarioId = null }) {
 
           <Group
             title="Policy rules"
-            hint="Each rule becomes one requirement. Add as many as the exercise needs."
+            hint="Each rule becomes one requirement. Hubs work at Layer 1 and can’t hold policies, so rules apply to routers, PCs, servers and modems."
             aside={<span className="sx-pill sx-tnum">{draft.rules.length} of {LIMITS.rules}</span>}
           >
             {draft.rules.length === 0 ? (

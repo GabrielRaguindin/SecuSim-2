@@ -42,28 +42,28 @@ const AS_SPEC = {
   }),
   star: spec({
     title: 'Optimized video streaming in a star network',
-    devices: { router: 1, hub: 2, pc: 6, modem: 0 },
+    devices: { router: 1, hub: 0, pc: 6, server: 1, modem: 1 },
     layout: { kind: 'star', center: 'router' },
     ipClass: 'C',
     requireCabling: true,
     rules: [
-      rule({ id: 'ps', policy: 'prioritizeStreaming', kind: 'ofTypes', types: ['pc'] }),
+      rule({ id: 'ps', policy: 'prioritizeStreaming', kind: 'ofTypes', types: ['server', 'pc'] }),
       rule({ id: 'tb', policy: 'throttleBulk', kind: 'exactly', types: ['pc'], count: 3 }),
-      rule({ id: 'aw', policy: 'allowWeb', kind: 'all' }),
-      rule({ id: 'ro', policy: 'restrictOutbound', kind: 'all' }),
+      rule({ id: 'aw', policy: 'allowWeb', kind: 'ofTypes', types: ['router', 'server', 'pc'] }),
+      rule({ id: 'bu', policy: 'blockUntrusted', kind: 'only', types: ['router'] }),
     ],
   }),
   mesh: spec({
     title: 'VoIP communication in a mesh network',
-    devices: { router: 1, hub: 2, pc: 3, modem: 0 },
+    devices: { router: 1, hub: 0, pc: 3, server: 1, modem: 1 },
     layout: { kind: 'mesh', center: 'router' },
     ipClass: 'C',
     requireCabling: true,
     rules: [
-      rule({ id: 'v', policy: 'voip', kind: 'all' }),
-      rule({ id: 'aw', policy: 'allowWeb', kind: 'all' }),
-      rule({ id: 'p2', policy: 'limitP2P', kind: 'all' }),
-      rule({ id: 'rd', policy: 'remoteDesktop', kind: 'only', types: ['router', 'hub'] }),
+      rule({ id: 'v', policy: 'voip', kind: 'ofTypes', types: ['router', 'server', 'pc'] }),
+      rule({ id: 'ev', policy: 'encryptVoip', kind: 'ofTypes', types: ['server', 'pc'] }),
+      rule({ id: 'p2', policy: 'limitP2P', kind: 'only', types: ['router'] }),
+      rule({ id: 'ss', policy: 'ssh', kind: 'only', types: ['router', 'server'] }),
     ],
   }),
 };
@@ -82,8 +82,8 @@ test('and they fail the same wrong answers', () => {
   const noLinks = run(state, ...state.doc.edges.map((e) => ({ type: 'removeEdge', id: e.id })));
   assert.ok(failing(grade(AS_SPEC.mesh, noLinks.doc)).includes('layout'));
   assert.equal(grade(AS_SPEC.mesh, createState().doc).met, 0, 'an empty canvas passes nothing');
-  const wrongRemote = run(state, { type: 'togglePolicy', ids: state.doc.nodes.slice(3).map((n) => n.id), policy: 'remoteDesktop', on: true });
-  assert.ok(failing(grade(AS_SPEC.mesh, wrongRemote.doc)).includes('rule-rd'));
+  const wrongSsh = run(state, { type: 'togglePolicy', ids: [state.doc.nodes[3].id], policy: 'ssh', on: true }); // a PC with SSH
+  assert.ok(failing(grade(AS_SPEC.mesh, wrongSsh.doc)).includes('rule-ss'));
 });
 
 test('every layout kind has a reference solution that passes', () => {
@@ -124,7 +124,8 @@ test('validation: layouts name what is wrong', () => {
 test('validation: rules name what is wrong', () => {
   const s = (r) => validateSpec(spec({ rules: [rule({ id: 'x', ...r })] })).errors.rules.x;
   assert.match(s({ kind: 'ofTypes', types: [] }), /at least one device type/);
-  assert.match(s({ kind: 'ofTypes', types: ['hub'] }), /no hubs/);
+  assert.match(s({ kind: 'ofTypes', types: ['hub'] }), /at least one device type/, 'a hub can’t be named in a policy rule');
+  assert.match(s({ kind: 'ofTypes', types: ['modem'] }), /no modems/);
   assert.match(s({ kind: 'exactly', types: ['pc'], count: 9 }), /Only 3 PCs/);
   assert.match(s({ kind: 'dependent', requires: '' }), /Choose the policy/);
   assert.match(s({ kind: 'dependent', requires: 'voip' }), /can’t depend on itself/);
@@ -162,12 +163,13 @@ test('a consistent, interesting scenario is accepted', () => {
 
 test('requirement wording reads naturally', () => {
   const s = spec({ devices: { router: 1, hub: 2, pc: 3, modem: 0 } });
-  assert.equal(ruleLabel(s, rule({ policy: 'voip', kind: 'all' })), 'Turn on VoIP for every device.');
+  assert.equal(ruleLabel(s, rule({ policy: 'voip', kind: 'all' })), 'Turn on VoIP for every device except the hubs.', 'the hubs are named as left out');
+  assert.equal(ruleLabel({ ...s, devices: { ...s.devices, hub: 0 } }, rule({ policy: 'voip', kind: 'all' })), 'Turn on VoIP for every device.');
   assert.equal(ruleLabel(s, rule({ policy: 'voip', kind: 'ofTypes', types: ['pc'] })), 'Turn on VoIP for all 3 PCs.');
   assert.equal(ruleLabel(s, rule({ policy: 'ssh', kind: 'ofTypes', types: ['router'] })), 'Turn on SSH access for the router.');
-  assert.equal(ruleLabel(s, rule({ policy: 'ssh', kind: 'only', types: ['router', 'hub'] })), 'Turn on SSH access for every router and hub only. No other device should have it.');
+  assert.equal(ruleLabel(s, rule({ policy: 'ssh', kind: 'only', types: ['router', 'pc'] })), 'Turn on SSH access for every router and PC only. No other device should have it.');
   assert.equal(ruleLabel(s, rule({ policy: 'ssh', kind: 'exactly', types: ['pc'], count: 2 })), 'Turn on SSH access for exactly 2 PCs. No other device should have it.');
-  assert.equal(ruleLabel(s, rule({ policy: 'blockPing', kind: 'off', types: ['hub'] })), 'Keep Block ping requests off for all 2 hubs.');
+  assert.equal(ruleLabel(s, rule({ policy: 'blockPing', kind: 'off', types: ['pc'] })), 'Keep Block ping requests off for all 3 PCs.');
   assert.equal(ruleLabel(s, rule({ policy: 'dataEncryption', kind: 'dependent', requires: 'fileTransfer' })), 'Turn on Enable data encryption for every device that has File transfer access.');
 });
 
@@ -181,7 +183,8 @@ test('compiled scenarios look like the built-in ones', () => {
   assert.ok(c.story && c.goal, 'story and goal are filled in when left blank');
   assert.match(c.goal, /full mesh of 6 devices/);
   assert.equal(c.checks.find((x) => x.id === 'class').label, 'Use Class C addresses (beginning 192 to 223) for every device.');
-  assert.deepEqual(c.checks.map((x) => x.id), ['devices', 'ips', 'class', 'layout', 'cables', 'rule-v', 'rule-aw', 'rule-p2', 'rule-rd']);
+  assert.equal(c.checks.find((x) => x.id === 'ips').label, 'Give every device its own IP address.');
+  assert.deepEqual(c.checks.map((x) => x.id), ['devices', 'ips', 'class', 'layout', 'cables', 'rule-v', 'rule-ev', 'rule-p2', 'rule-ss']);
   const noIps = compileScenario({ ...AS_SPEC.mesh, requireIps: false });
   assert.ok(!noIps.checks.some((x) => x.id === 'ips'));
   assert.ok(!noIps.checks.some((x) => x.id === 'class'), 'no addresses means no address-class rule');

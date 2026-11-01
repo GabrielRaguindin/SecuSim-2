@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { GlyphPaths } from '@/components/ui/DeviceGlyph';
 import { NODE_SIZE, clampToBounds, edgeId } from '@/lib/network.js';
 import { isSettled, projectRelease, stepSpring, velocityFromSamples } from '@/lib/spring.js';
-import { DEVICE_ORDER } from '@/lib/devices.js';
+import { DEVICE_ORDER, canHaveIp } from '@/lib/devices.js';
 import { canConnect } from '@/lib/networkReducer.js';
 import { cableLabel, requiredCable } from '@/lib/cabling.js';
 import { usePrefersReducedMotion } from '@/components/hooks.js';
@@ -386,7 +386,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
         {doc.nodes.map((node) => {
           const selected = selection.nodes.includes(node.id);
           const policyCount = (doc.policies[node.id] ?? []).length;
-          const label = [node.name, node.ip || 'no IP address', policyCount ? `${policyCount} policies` : null, selected ? 'selected' : null]
+          const label = [node.name, canHaveIp(node.type) ? node.ip || 'no IP address' : 'no IP address or policies (Layer 1)', policyCount ? `${policyCount} policies` : null, selected ? 'selected' : null]
             .filter(Boolean)
             .join(', ');
           return (

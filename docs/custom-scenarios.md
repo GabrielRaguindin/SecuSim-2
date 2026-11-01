@@ -21,13 +21,15 @@ A custom scenario is **data, not code**: a "spec" in `lib/customScenarios.js`.
 
 ### Rule kinds
 
+**Hubs can't be named in a rule.** They work at Layer 1 and can't hold a policy (see `layer1-hubs.md`), so the builder never offers them, a hub in an imported file is dropped, and `all` means every device except the hubs. A hub can still be the center of a star, and can be counted and placed like any device.
+
 | Kind | Means | Example sentence |
 |---|---|---|
-| `all` | every device has it | Turn on VoIP for every device. |
+| `all` | every device that can hold a policy has it | Turn on VoIP for every device. (With hubs placed: "...for every device except the hubs.") |
 | `ofTypes` | every device of these types has it | Turn on VoIP for all 3 PCs. |
-| `only` | those types have it, and nothing else does | Turn on SSH access for every router and hub only. |
+| `only` | those types have it, and nothing else does | Turn on SSH access for every router and PC only. |
 | `exactly` | exactly N of those types have it, nothing else does | Turn on File transfer access for exactly 5 PCs. |
-| `off` | those types must not have it | Keep Block ping requests off for all 2 hubs. |
+| `off` | those types must not have it | Keep Block ping requests off for all 3 PCs. |
 | `dependent` | every device with policy A must also have policy B | Turn on Block untrusted IP for every device that has File transfer access. |
 
 ## Every saved scenario can be completed

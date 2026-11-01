@@ -123,11 +123,12 @@ test('no links is not "all links are right" (vacuous truth)', () => {
 });
 
 test('the right cable depends on the device types, not on a fixed pattern', () => {
-  // Scenario 2: PCs need crossover to the router, hubs need straight.
+  // Scenario 2: PCs and the server need crossover to the router, the modem needs straight.
   const { state, ids } = solveVideoStreaming();
-  const [router, hub1, , pc1] = ids;
+  const [router, server, modem, pc1] = ids;
   const edgeOf = (a, b) => state.doc.edges.find((e) => (e.a === a && e.b === b) || (e.a === b && e.b === a));
-  assert.equal(edgeOf(router, hub1).cable, 'straight');
+  assert.equal(edgeOf(router, modem).cable, 'straight');
+  assert.equal(edgeOf(router, server).cable, 'crossover');
   assert.equal(edgeOf(router, pc1).cable, 'crossover');
   // linking with the helper uses the right cable
   const fresh = addNodes(createState(), ['server', 'hub']);
