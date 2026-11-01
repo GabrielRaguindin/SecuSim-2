@@ -5,7 +5,7 @@ import DeviceGlyph from '@/components/ui/DeviceGlyph';
 import Switch from '@/components/ui/Switch';
 import Icon from '@/components/ui/Icon';
 import Segmented from '@/components/ui/Segmented';
-import { DEVICE_TYPES } from '@/lib/devices.js';
+import { DEVICE_TYPES, canHaveIp, canHavePolicies } from '@/lib/devices.js';
 import { POLICY_CATEGORIES } from '@/lib/policies.js';
 import { hasPolicy, validateIp } from '@/lib/networkReducer.js';
 import { IP_CLASSES, IP_CLASS_IDS, describeIp, ipClassOf, nextHostIp, normalizeIp } from '@/lib/ip.js';
@@ -90,6 +90,16 @@ function AddressDetails({ node, doc, dispatch, disabled }) {
       ) : (
         <p className="sx-caption">Pick a class for a starting address, or type your own above.</p>
       )}
+    </div>
+  );
+}
+
+/** Shown instead of the address and policy controls when a hub is selected. */
+function Layer1Note() {
+  return (
+    <div className="sx-layer1">
+      <p className="sx-callout"><strong>A Layer 1 device</strong></p>
+      <p className="sx-caption">A hub repeats electrical signals out of every port. It never reads an address or a rule, so it has no IP address and can’t hold policies. There is nothing to set here.</p>
     </div>
   );
 }
@@ -183,6 +193,9 @@ export default function Inspector({ doc, selection, dispatch, disabled, onRemove
 
   const ids = nodes.map((n) => n.id);
   const single = nodes.length === 1 ? nodes[0] : null;
+  // Hubs can't hold a policy, so the switches only ever act on the other devices in the selection.
+  const holderIds = nodes.filter((n) => canHavePolicies(n.type)).map((n) => n.id);
+  const skipped = nodes.length - holderIds.length;
 
   return (
     <section className="sx-panel" aria-label="Selected device">
@@ -198,7 +211,9 @@ export default function Inspector({ doc, selection, dispatch, disabled, onRemove
         </div>
       </header>
 
-      {single ? (
+      {single && !canHaveIp(single.type) ? (
+        <Layer1Note />
+      ) : single ? (
         <>
           <IpField node={single} doc={doc} dispatch={dispatch} disabled={disabled} />
           <AddressDetails node={single} doc={doc} dispatch={dispatch} disabled={disabled} />
@@ -207,7 +222,14 @@ export default function Inspector({ doc, selection, dispatch, disabled, onRemove
         <p className="sx-caption">Select a single device to set its IP address.</p>
       )}
 
-      <Policies doc={doc} ids={ids} dispatch={dispatch} disabled={disabled} />
+      {holderIds.length > 0 ? (
+        <>
+          {skipped > 0 && <p className="sx-caption">{skipped === 1 ? 'A hub in' : `${skipped} hubs in`} the selection {skipped === 1 ? 'is' : 'are'} skipped: hubs work at Layer 1 and can’t hold policies.</p>}
+          <Policies doc={doc} ids={holderIds} dispatch={dispatch} disabled={disabled} />
+        </>
+      ) : (
+        !single && <Layer1Note />
+      )}
 
       <button type="button" className="sx-btn sx-btn--danger sx-btn--block" disabled={disabled} onClick={() => onRemoveNodes(ids)}>
         <Icon name="trash" size={18} /> {single ? 'Remove device' : `Remove ${nodes.length} devices`}

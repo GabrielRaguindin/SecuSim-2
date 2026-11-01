@@ -66,7 +66,7 @@ export default function ScenarioList() {
   return (
     <div className="sx-scenario-sections">
       <section aria-labelledby="built-in">
-        <h2 id="built-in" className="sx-title-2 sx-section-title">Built in</h2>
+        <h2 id="built-in" className="sx-title-2 sx-section-title">Practice Scenarios</h2>
         <ul className="sx-scenarios">
           {SCENARIOS.map((s) => {
             const best = bestFor(s.id);
@@ -96,7 +96,7 @@ export default function ScenarioList() {
       <section aria-labelledby="yours">
         <div className="sx-section-head">
           <div>
-            <h2 id="yours" className="sx-title-2">Your scenarios</h2>
+            <h2 id="yours" className="sx-title-2">Custom Scenarios</h2>
             <p className="sx-body">Write your own brief and requirements, then simulate it like any other. They stay in this browser.</p>
           </div>
           <div className="sx-section-actions">

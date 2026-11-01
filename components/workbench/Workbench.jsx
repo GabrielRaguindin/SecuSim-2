@@ -198,7 +198,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
           hasNodes={doc.nodes.length > 0}
           onAutoIps={(ipClass) => {
             dispatch({ type: 'autoIps', ipClass });
-            toast.show(`Gave every device a Class ${ipClass} address.`, undoAction());
+            toast.show(`Gave every addressable device a Class ${ipClass} address.`, undoAction());
           }}
           onClear={() => {
             dispatch({ type: 'clear' });

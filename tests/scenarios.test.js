@@ -85,12 +85,15 @@ test('B-03: re-assigning IPs mid-way does not lose policies', () => {
 });
 
 test('B-04: policy checks are device-type aware', () => {
-  // Scenario 3: remote desktop on three PCs instead of the router and hubs.
+  // Scenario 3: SSH on a PC as well as on the router and the server.
   const { state, ids } = solveVoipMesh();
-  let s = run(state, { type: 'togglePolicy', ids: ids.slice(0, 3), policy: 'remoteDesktop', on: false },
-    { type: 'togglePolicy', ids: ids.slice(3), policy: 'remoteDesktop', on: true });
-  const remote = verdict(mesh, s).checks.find((c) => c.id === 'remote');
-  assert.equal(remote.ok, false, 'three devices but the wrong three');
+  let s = run(state, { type: 'togglePolicy', ids: [ids[3]], policy: 'ssh', on: true });
+  const ssh = verdict(mesh, s).checks.find((c) => c.id === 'ssh');
+  assert.equal(ssh.ok, false, 'a PC must not have it');
+  assert.match(ssh.detail, /PC 1/);
+  // ...and the server being left out fails too.
+  s = run(state, { type: 'togglePolicy', ids: [ids[1]], policy: 'ssh', on: false });
+  assert.equal(verdict(mesh, s).checks.find((c) => c.id === 'ssh').ok, false);
 
   // Scenario 1: a sixth PC with file transfer counts against you.
   const one = solveFileSharing();
@@ -99,10 +102,10 @@ test('B-04: policy checks are device-type aware', () => {
   assert.equal(transfer.ok, false);
   assert.match(transfer.detail, /6 PCs have File transfer access, but only 5 should/);
 
-  // Scenario 2: throttling a hub instead of a PC fails.
+  // Scenario 2: throttling the router instead of a PC fails.
   const two = solveVideoStreaming();
   s = run(two.state, { type: 'togglePolicy', ids: [two.ids[3]], policy: 'throttleBulk', on: false },
-    { type: 'togglePolicy', ids: [two.ids[1]], policy: 'throttleBulk', on: true });
+    { type: 'togglePolicy', ids: [two.ids[0]], policy: 'throttleBulk', on: true });
   assert.equal(verdict(star, s).checks.find((c) => c.id === 'throttle').ok, false);
 });
 
@@ -111,8 +114,8 @@ test('B-05: scenario 3 reports the right device counts', () => {
   const s = run(state, { type: 'add', nodeType: 'pc', x: 1, y: 1 });
   const devices = verdict(mesh, s).checks.find((c) => c.id === 'devices');
   assert.equal(devices.ok, false);
-  assert.match(devices.detail, /Needs 3 PCs, 2 hubs and 1 router/);
-  assert.match(devices.detail, /You have 4 PCs, 2 hubs and 1 router/);
+  assert.match(devices.detail, /Needs 3 PCs, 1 server, 1 modem and 1 router/);
+  assert.match(devices.detail, /You have 4 PCs, 1 server, 1 modem and 1 router/);
   assert.doesNotMatch(devices.detail, /6 PCs/);
 });
 

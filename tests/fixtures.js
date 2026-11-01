@@ -32,25 +32,28 @@ export function solveFileSharing() {
   return { state: s, ids };
 }
 
-/** A complete, correct solution to scenario 2 (star). */
+/** A complete, correct solution to scenario 2 (a star: router in the middle, a server, a modem and 6 PCs). */
 export function solveVideoStreaming() {
-  let { s, ids } = place(['router', 'hub', 'hub', ...Array(6).fill('pc')]);
-  const [router, ...rest] = ids;
-  for (const id of rest) s = link(s, router, id);
+  let { s, ids } = place(['router', 'server', 'modem', ...Array(6).fill('pc')]);
+  const [router, server, , ...pcs] = ids;
+  for (const id of ids.slice(1)) s = link(s, router, id);
   s = apply(s, { type: 'autoIps', ipClass: 'C' });
-  const pcs = ids.slice(3);
-  s = turnOn(s, pcs, 'prioritizeStreaming');
+  s = turnOn(s, [server, ...pcs], 'prioritizeStreaming');
   s = turnOn(s, pcs.slice(0, 3), 'throttleBulk');
-  s = turnOn(s, allIds(s), 'allowWeb', 'restrictOutbound');
+  s = turnOn(s, [router, server, ...pcs], 'allowWeb');
+  s = turnOn(s, [router], 'blockUntrusted');
   return { state: s, ids };
 }
 
-/** A complete, correct solution to scenario 3 (mesh). */
+/** A complete, correct solution to scenario 3 (a mesh: router, VoIP server, modem and 3 PCs). */
 export function solveVoipMesh() {
-  let { s, ids } = place(['router', 'hub', 'hub', 'pc', 'pc', 'pc']);
+  let { s, ids } = place(['router', 'server', 'modem', 'pc', 'pc', 'pc']);
   for (let i = 0; i < ids.length; i += 1) for (let j = i + 1; j < ids.length; j += 1) s = link(s, ids[i], ids[j]);
   s = apply(s, { type: 'autoIps', ipClass: 'C' });
-  s = turnOn(s, allIds(s), 'voip', 'allowWeb', 'limitP2P');
-  s = turnOn(s, ids.slice(0, 3), 'remoteDesktop');
+  const [router, server, , ...pcs] = ids;
+  s = turnOn(s, [router, server, ...pcs], 'voip');
+  s = turnOn(s, [server, ...pcs], 'encryptVoip');
+  s = turnOn(s, [router], 'limitP2P');
+  s = turnOn(s, [router, server], 'ssh');
   return { state: s, ids };
 }

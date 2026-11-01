@@ -1,9 +1,11 @@
 import { groupByNetwork } from '@/lib/ip.js';
+import { canHaveIp } from '@/lib/devices.js';
 
 /** Every addressed device, organised by class and network, so the plan reads at a glance. */
 export default function AddressPlan({ doc }) {
   if (doc.nodes.length === 0) return null;
-  const { groups, unassigned } = groupByNetwork(doc.nodes);
+  const hubs = doc.nodes.filter((n) => !canHaveIp(n.type));
+  const { groups, unassigned } = groupByNetwork(doc.nodes.filter((n) => canHaveIp(n.type)));
 
   return (
     <section className="sx-panel sx-plan" aria-label="Address plan">
@@ -28,6 +30,9 @@ export default function AddressPlan({ doc }) {
       ))}
       {unassigned.length > 0 && (
         <p className="sx-caption">No address yet: {unassigned.map((n) => n.name).join(', ')}.</p>
+      )}
+      {hubs.length > 0 && (
+        <p className="sx-caption">No address needed: {hubs.map((n) => n.name).join(', ')}. Hubs work at Layer 1.</p>
       )}
     </section>
   );

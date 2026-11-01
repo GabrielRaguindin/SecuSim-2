@@ -8,7 +8,7 @@ The sandbox has a **Send a packet** panel. Pick a sender, a receiver and a packe
 
 | # | Check | Stops with | Where the packet stops |
 |---|---|---|---|
-| 1 | Two different devices; a hub can't be an endpoint (it has no address) | `same-device`, `bad-endpoint`, `missing` | the sender |
+| 1 | Two different devices; a hub can't be an endpoint (it works at Layer 1 and has no address) | `same-device`, `bad-endpoint`, `missing` | the sender |
 | 2 | Both devices have an IP address | `no-address` | the sender |
 | 3 | The sender's firewall: **Restrict outbound traffic** when the receiver is on another network; **Allow web traffic** (web) or **File transfer access** (file) | `outbound-blocked`, `sender-policy` | the sender |
 | 4 | A route over working links | `no-route` (lists what the sender can reach) | the sender |
