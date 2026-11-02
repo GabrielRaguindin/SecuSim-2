@@ -16,6 +16,8 @@ const makeTrace = (result, step, done) => ({
   ok: result.ok,
   failNode: result.failure?.nodeId ?? null,
   failEdge: result.failure?.edgeId ?? null,
+  copies: result.broadcasts.flatMap((b) => b.edges),
+  heard: result.broadcasts.flatMap((b) => b.heard),
 });
 
 /**

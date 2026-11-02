@@ -99,7 +99,7 @@ function Layer1Note() {
   return (
     <div className="sx-layer1">
       <p className="sx-callout"><strong>A Layer 1 device</strong></p>
-      <p className="sx-caption">A hub repeats electrical signals out of every port. It never reads an address or a rule, so it has no IP address and can’t hold policies. There is nothing to set here.</p>
+      <p className="sx-caption">A hub copies every signal it receives out of all its other ports, to everyone. It never reads an address or a rule, so it has no IP address and can’t hold policies. There is nothing to set here.</p>
     </div>
   );
 }

@@ -292,6 +292,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
     for (let i = 0; i <= at; i += 1) traceNodes.set(trace.path[i], 'passed');
     traceNodes.set(trace.path[at], 'current');
     if (trace.done) {
+      for (const id of trace.heard ?? []) if (!traceNodes.has(id)) traceNodes.set(id, 'heard');
       if (trace.ok) traceNodes.set(trace.path[last], 'delivered');
       else if (trace.failNode) traceNodes.set(trace.failNode, 'failed');
       const failEdge = trace.failEdge ? doc.edges.find((e) => e.id === trace.failEdge) : null;
@@ -348,7 +349,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
                 data-selected={selected}
                 data-cable={edge.cable}
                 data-wrong={wrong}
-                data-trace={trace?.done && trace.failEdge === edge.id ? 'failed' : traceEdges.has(edge.id) ? 'lit' : undefined}
+                data-trace={trace?.done && trace.failEdge === edge.id ? 'failed' : traceEdges.has(edge.id) ? 'lit' : trace?.done && trace.copies?.includes(edge.id) ? 'copy' : undefined}
                 x1={a.x}
                 y1={a.y}
                 x2={b.x}

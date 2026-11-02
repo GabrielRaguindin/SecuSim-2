@@ -217,5 +217,5 @@ test('Layer 1: a star with a hub at the center works, for scenarios and for pack
   const r = traceRoute(solved, pcs[0].id, pcs[3].id, 'web');
   assert.equal(r.ok, true);
   assert.deepEqual(r.path, [pcs[0].id, hub.id, pcs[3].id]);
-  assert.match(r.log[1].text, /Hub 1 repeats it to every device on its ports/);
+  assert.match(r.log[1].text, /Hub 1 repeats it out of every other port, to PC 2, PC 3 and PC 4/);
 });

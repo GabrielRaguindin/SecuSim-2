@@ -14,7 +14,10 @@ The sandbox has a **Send a packet** panel. Pick a sender, a receiver and a packe
 | 4 | A route over working links | `no-route` (lists what the sender can reach) | the sender |
 | 5 | Every link on the route has the right cable (a wrong cable means the link is down) | `wrong-cable` | the device before the broken link |
 | 6 | Different networks need a **router** on the route | `no-router` | the sender |
+| 6b | A hub on the route copies the packet out of every other port. If the copies meet a hub they already reached, it is a loop | `broadcast-storm` | the first hub on the route |
 | 7 | The receiver's firewall: **Block untrusted IP** (sender on another network), **Block ping requests** (ping), **Allow web traffic** / **File transfer access** | `receiver-blocked` | the receiver (it arrived, then was dropped) |
+
+The numbering above is the order for the sender's checks; the hub flood runs after the route is found and before the receiver's firewall. See `docs/hub-broadcast.md`.
 
 A route that avoids a broken link is used when one exists, so a wrong cable only stops traffic when there is no other way through.
 

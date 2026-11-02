@@ -44,4 +44,4 @@ A switch port behaves like a hub port, so it joins the "receive" group in `lib/c
 
 ## Not changed
 
-A switch does not yet behave differently from a hub when a packet crosses it, and filtering still applies only at the two endpoints. Those are the next 2.4 pieces.
+A switch still just passes a packet along: it does not yet deliver only to the intended device, and filtering still applies only at the two endpoints. Hub broadcasting is covered in `docs/hub-broadcast.md`.
