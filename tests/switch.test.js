@@ -90,7 +90,9 @@ test('packets cross a switch, and a switch can send and receive', () => {
   const blocked = traceRoute(s.doc, ids[0], ids[1], 'ping');
   assert.equal(blocked.failure.code, 'receiver-blocked');
   assert.match(blocked.failure.detail, /Block ping requests is on for Switch 1/);
-  assert.equal(traceRoute(s.doc, ids[0], ids[2], 'ping').ok, true, 'a switch is not an endpoint for traffic passing through it');
+  const passing = traceRoute(s.doc, ids[0], ids[2], 'ping');
+  assert.equal(passing.failure.code, 'transit-blocked', 'a switch with Block ping requests drops a ping passing through it too');
+  assert.equal(passing.failure.nodeId, ids[1]);
 });
 
 test('a switch with no address still passes traffic through', () => {

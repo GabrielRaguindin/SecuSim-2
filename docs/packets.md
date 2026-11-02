@@ -14,6 +14,7 @@ The sandbox has a **Send a packet** panel. Pick a sender, a receiver and a packe
 | 4 | A route over working links | `no-route` (lists what the sender can reach) | the sender |
 | 5 | Every link on the route has the right cable (a wrong cable means the link is down) | `wrong-cable` | the device before the broken link |
 | 6 | Different networks need a **router** on the route | `no-router` | the sender |
+| 6a | A device on the route (not a hub) with Restrict outbound traffic, Block untrusted IP or Block ping requests drops the packet; or a web request / file transfer reaches a device that hasn't been given Allow web traffic / File transfer access | `transit-blocked`, `transit-policy` | that device |
 | 6b | A hub on the route copies the packet out of every other port. If the copies meet a hub they already reached, it is a loop | `broadcast-storm` | the first hub on the route |
 | 7 | The receiver's firewall: **Block untrusted IP** (sender on another network), **Block ping requests** (ping), **Allow web traffic** / **File transfer access** | `receiver-blocked` | the receiver (it arrived, then was dropped) |
 
@@ -26,8 +27,8 @@ A route that avoids a broken link is used when one exists, so a wrong cable only
 | Type | Needs |
 |---|---|
 | Ping | nothing, unless the receiver has Block ping requests on |
-| Web | Allow web traffic on both devices |
-| File | File transfer access on both devices |
+| Web | Allow web traffic on the sender, the receiver and every device in between (a hub can't hold a policy, so it never needs it) |
+| File | File transfer access on the sender, the receiver and every device in between (same exception for hubs) |
 
 ## Networks and routers
 
@@ -56,6 +57,6 @@ A route that avoids a broken link is used when one exists, so a wrong cable only
 - One-way: there is no reply, so a ping that arrives is "delivered", not "answered".
 - No ARP, DNS, TTL, MTU or latency. Routers need no addresses on their own interfaces.
 - Every device passes packets along, as in the ring demo on the Learn page, even though real PCs would not forward them.
-- Firewall policies apply at the two endpoints only, not at devices in the middle.
+- Firewall rules apply at devices in the middle, in path order: the three blocking rules stop a packet when they are on, and the two permissions (Allow web traffic, File transfer access) must be on at every device the packet crosses. See `docs/transit-filtering.md`.
 - Encryption policies and QoS policies don't affect delivery.
 - The packet panel is in the sandbox only. The simulator is unchanged.
