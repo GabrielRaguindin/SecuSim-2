@@ -42,6 +42,8 @@
   /* Devices: base and highlight for the tile gradient */
   --dev-router: #0a84ff;
   --dev-router-top: #5aa9ff;
+  --dev-switch: #d1467a;
+  --dev-switch-top: #ee83a8;
   --dev-hub: #9b4fd0;
   --dev-hub-top: #c186ee;
   --dev-pc: #55677c;
@@ -116,6 +118,8 @@
 
     --dev-router: #0a84ff;
     --dev-router-top: #4ea4ff;
+    --dev-switch: #e0548a;
+    --dev-switch-top: #f391b3;
     --dev-hub: #a35bd8;
     --dev-hub-top: #c58cf0;
     --dev-pc: #697c92;

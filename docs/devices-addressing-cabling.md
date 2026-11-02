@@ -33,7 +33,7 @@ Every link now has a `cable`: `'straight'` or `'crossover'` (default `'straight'
 | Group | Devices | Pins 1 and 2 |
 |---|---|---|
 | transmit | PC, Server, Router | transmit |
-| receive | Hub, Modem | receive |
+| receive | Hub, Switch, Modem | receive |
 
 A link between **unlike** groups needs **straight-through**. A link between **like** groups needs **crossover**. `requiredCable(typeA, typeB)` is the one place this rule lives; the canvas, inspector, grading, custom scenario solver and the Learn page all call it.
 
@@ -70,3 +70,7 @@ Three new options, all optional: **address class** (any, A, B or C), **all devic
 - Subnetting beyond the default class masks, and routing between networks.
 - Auto-MDIX (modern devices pick the cable themselves). The Learn page mentions it.
 - Fibre, serial or console cables.
+
+## The Switch
+
+The sixth device. A managed switch, so it can hold an IP address and policies, and for cabling it sits in the receive group with the hub and modem. See `docs/switch.md`.

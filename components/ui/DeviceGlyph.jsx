@@ -9,6 +9,14 @@ export function GlyphPaths({ type }) {
           <path d="M7 13V8M17 13V8M7 5.5h.01M17 5.5h.01M7.5 16.5h.01M11 16.5h.01" />
         </>
       );
+    case 'switch':
+      return (
+        <>
+          <rect x="3" y="10" width="18" height="9" rx="2" />
+          <path d="M8 6.5h8M10 4.5l-2 2 2 2M14 4.5l2 2-2 2" />
+          <path d="M7 14.5h.01M10.33 14.5h.01M13.67 14.5h.01M17 14.5h.01" />
+        </>
+      );
     case 'hub':
       return (
         <>
