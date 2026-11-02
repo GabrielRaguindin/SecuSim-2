@@ -20,6 +20,7 @@ const WHO = {
   pc: 'Yes. Every computer needs an address to send and receive data.',
   server: 'Yes. Other devices need a steady address to find it.',
   modem: 'Yes. It has an address so it can be managed and can reach the internet provider.',
+  switch: 'Yes. This is a managed switch: it has an address so an administrator can reach it, and it can hold policies. (A basic unmanaged switch has neither.)',
   hub: 'No. A hub works at Layer 1: it repeats electrical signals out of every port and never reads an address. It can’t hold a policy either.',
 };
 

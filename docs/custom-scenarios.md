@@ -8,7 +8,7 @@ A custom scenario is **data, not code**: a "spec" in `lib/customScenarios.js`.
 
 ```js
 { id, title, story, goal, timeLimit,            // timeLimit in seconds, 60 to 3600
-  devices: { router, hub, pc, server, modem },  // exact counts, at most 12 each and 20 in total
+  devices: { router, switch, hub, pc, server, modem },  // exact counts, at most 12 each and 20 in total
   layout: { kind, center },                     // kind: any | connected | ring | star | mesh
   requireIps: true,
   ipClass: 'any',                               // any | A | B | C   (needs requireIps)

@@ -13,7 +13,7 @@ const flip = (c) => (c === 'straight' ? 'crossover' : 'straight');
 
 test('Server is a real device type, and is an end device for cabling', () => {
   assert.equal(isDeviceType('server'), true);
-  assert.deepEqual(DEVICE_ORDER, ['router', 'hub', 'pc', 'server', 'modem']);
+  assert.deepEqual(DEVICE_ORDER, ['router', 'switch', 'hub', 'pc', 'server', 'modem']);
   assert.equal(DEVICE_TYPES.server.label, 'Server');
   assert.equal(cableGroup('server'), cableGroup('pc'));
   const { state, ids } = addNodes(createState(), ['server', 'server']);

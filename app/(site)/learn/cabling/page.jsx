@@ -38,7 +38,7 @@ export default function CablingPage() {
       <section className="sx-lesson sx-lesson--policy sx-lesson--stack" aria-labelledby="matrix-title">
         <div className="sx-lesson__text">
           <h2 id="matrix-title" className="sx-title-1">Which cable, where</h2>
-          <p className="sx-lead">PCs, servers and routers send on pins 1 and 2. Hubs and modems listen on them.</p>
+          <p className="sx-lead">PCs, servers and routers send on pins 1 and 2. Hubs, switches and modems listen on them.</p>
           <p className="sx-body">So like devices need a crossover, and unlike devices need a straight-through. In SecuSim you choose the cable for each link, and the inspector tells you if it is the wrong one.</p>
           <p className="sx-caption">Modern equipment often detects the cable type by itself (Auto-MDIX). SecuSim asks you to choose so you learn the rule.</p>
         </div>
