@@ -25,7 +25,7 @@ export default function PoliciesPage() {
         <ul className="sx-controls" aria-label="Which rules apply where">
           <li className="sx-controls__item">
             <h3 className="sx-callout sx-controls__name">Rules that block: Restrict outbound traffic, Block untrusted IP, Block ping requests</h3>
-            <p className="sx-callout sx-muted">When one of these is on, the device can stop a matching packet, whether it is an end of the journey or just in the middle.</p>
+            <p className="sx-callout sx-muted">When one of these is on, the device can stop a matching packet, whether it is an end of the journey or just in the middle. A ping is answered: the receiver sends a reply back the same way. Block ping requests stops the request but never the reply, while Restrict outbound traffic and Block untrusted IP are checked on the reply too, because it is a packet going the other way.</p>
           </li>
           <li className="sx-controls__item">
             <h3 className="sx-callout sx-controls__name">Rules that permit: Allow web traffic, File transfer access</h3>

@@ -30,11 +30,16 @@ test('a packet crosses a hub between two PCs on the same network', () => {
   assert.equal(r.ok, true);
   assert.equal(r.failure, null);
   assert.deepEqual(names(n, r), ['PC 1', 'Hub 1', 'PC 2']);
-  assert.equal(r.summary, 'Delivered in 2 hops');
-  assert.deepEqual(r.log.map((l) => l.ok), [true, true, true]);
+  assert.equal(r.summary, 'Answered in 2 hops each way');
+  assert.equal(r.status, 'answered');
+  assert.ok(r.log.every((l) => l.ok));
+  assert.equal(r.log.length, 6, 'the request, then the reply');
   assert.match(r.log[0].text, /PC 1 sends a ping to 192\.168\.1\.2/);
   assert.match(r.log[1].text, /Hub 1 repeats it/);
   assert.match(r.log[2].text, /PC 2 receives it/);
+  assert.match(r.log[3].text, /PC 2 sends a ping reply to 192\.168\.1\.1/);
+  assert.match(r.log[4].text, /Hub 1 repeats it/);
+  assert.match(r.log[5].text, /PC 1 receives the reply/);
 });
 
 test('two PCs joined directly work with a crossover cable and fail with a straight-through one', () => {

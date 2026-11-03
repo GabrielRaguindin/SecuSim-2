@@ -440,6 +440,7 @@
 .sx-packetresult { display: grid; gap: 8px; padding: 14px; border-radius: var(--r-md); background: var(--surface-2); }
 .sx-packetresult[data-ok='true'] { background: var(--ok-tint); }
 .sx-packetresult[data-ok='false'] { background: var(--danger-tint); }
+.sx-packetresult[data-status='unanswered'] { background: var(--warn-tint); }
 .sx-packetresult__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .sx-packetresult__fix { color: var(--label); }
 .sx-packetlog { display: grid; gap: 6px; margin-top: 4px; }

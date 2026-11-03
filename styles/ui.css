@@ -131,6 +131,7 @@
 }
 .sx-pill--ok { background: var(--ok-tint); color: var(--ok); }
 .sx-pill--danger { background: var(--danger-tint); color: var(--danger); }
+.sx-pill--warn { background: var(--warn-tint); color: var(--warn); }
 .sx-pill--accent { background: var(--accent-tint); color: var(--accent); }
 
 /* ---------- Segmented control: the thumb slides on a spring ---------- */

@@ -7,12 +7,20 @@
 
 | Area | Status | Evidence |
 |---|---|---|
-| Network model, history, validation | COMPLETED | 46 unit tests pass [V] |
+| Network model, history, validation | COMPLETED | Unit tests [V] (197 across the project) |
 | Scenario grading (3 scenarios, reference solutions, a regression per 1.x bug) | COMPLETED | Unit tests [V] |
 | Storage (results, topologies) | COMPLETED | Unit tests with a fake store [V]; real `localStorage` exercised in a browser [V] |
 | Workbench: dock, canvas, link tool, inspector, undo, shortcuts | COMPLETED | Driven end to end in headless Chromium [V] |
 | Sandbox with library | COMPLETED | Save, reload, reopen restored devices, links and IPs [V] |
 | Simulator: brief, countdown, check, finish, save, retry, timeout | COMPLETED | A full Scenario 3 run through the UI scored 7 of 7 [V]; timeout tested with a fake clock [V] |
+| Custom scenarios (build, validate, save, import, export) | COMPLETED | Unit tests, including proof that every saved scenario can be completed [V]; driven in the browser [V] |
+| Server device, IP classes, Ethernet cabling | COMPLETED | Unit tests [V]; browser checks [V] |
+| Sandbox packets (route, cables, networks, firewall at the ends) | COMPLETED | Unit tests, including a seeded randomized check [V]; browser [V] |
+| Scenarios 1 to 3 revised; the hub as a Layer 1 device | COMPLETED | Unit tests [V]; all three built-ins completed through the UI [V] |
+| 2.4.1 The Switch | COMPLETED | Unit tests [V]; browser checks, including a 360px dock [V] |
+| 2.4.2 Hub as a strict broadcaster, broadcast storm detection | COMPLETED | Unit tests [V]; a three-hub loop built by hand in the browser, the storm and the fix [V] |
+| 2.4.3 Expanded security enforcement (filtering on the way, default-deny permissions) | COMPLETED | Unit tests with a 2000-network randomized check [V]; browser [V] |
+| 2.4.4 Ping mechanics (Answered, No reply, the reply) | COMPLETED | Unit tests with a 3000-network randomized check [V]; every outcome driven in the browser [V] |
 | Results page, PDF export | IN PROGRESS | List, expand and delete verified [V]. **PDF download not exercised** (jsPDF was stubbed in the harness); text sanitiser tested [V] |
 | Learn pages and packet demo | COMPLETED | Rendered and the packet animation ran [V] |
 | Design system, light and dark, phone layout | COMPLETED | Screenshots reviewed for every page [V] |
@@ -26,6 +34,10 @@
 4. **PDF output** [U], as above.
 5. **Server rendering and hydration** [U]: geometry is rounded to avoid mismatches, but it has not been seen in a real Next server render.
 
+## Patch 2.4 is complete
+
+Switch, strict hub broadcasting with storm detection, expanded security enforcement and the ping reply are all in. See `docs/switch.md`, `docs/hub-broadcast.md`, `docs/transit-filtering.md` and `docs/ping-reply.md`, and `docs/recommendation.md` for the numbering (the original 2.4.3 was dropped and the original 2.4.5 became 2.4.3). The outline for Patch 2.5 is still to come.
+
 ## Decisions waiting for you
 
 See `MIGRATION.md`, section "Decisions that need your sign-off". The impossible Scenario 1 requirement ("each PC connected to a router") is resolved: Scenario 1 is now a ring of 8 PCs with no routers.
@@ -35,7 +47,7 @@ See `MIGRATION.md`, section "Decisions that need your sign-off". The impossible 
 | Priority | Action |
 |---|---|
 | P0 | Run `npm install`, `npm run build`, `npm run lint`, and fix what they report |
-| P0 | Commit this as the 2.0 foundation branch; confirm the sign-off decisions |
+| P0 | Commit the 2.0 foundation and the patches on top of it as branches or commits; confirm the sign-off decisions |
 | P1 | Add Playwright tests to the repo that run against `next dev` (the flows in this file marked [V] are the script) |
 | P1 | Test on Safari, Firefox and a real phone; download a PDF and open it |
 | P1 | Screen-reader pass on the canvas, inspector and sheets |

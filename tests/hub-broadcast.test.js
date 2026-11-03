@@ -38,7 +38,8 @@ test('one bystander reads naturally, and no bystanders adds no line', () => {
   assert.match(send(one, 0, 1).log[2].text, /^Heard by PC 3, which ignores it because it isn’t addressed to it\.$/);
   const none = net({ types: ['pc', 'hub', 'pc'], links: [[0, 1], [1, 2]], ips: ['192.168.1.1', '', '192.168.1.2'] });
   const r = send(none, 0, 2);
-  assert.deepEqual(r.log.map((l) => l.ok), [true, true, true]);
+  assert.ok(r.log.every((l) => l.ok));
+  assert.ok(!r.log.some((l) => /Heard by/.test(l.text)), 'no bystanders, so no line about them');
   assert.deepEqual(r.broadcasts[0].heard, []);
 });
 
@@ -66,7 +67,8 @@ test('a switch still just passes the packet along, with no copies', () => {
   const r = send(n, 0, 2);
   assert.equal(r.ok, true);
   assert.deepEqual(r.broadcasts, []);
-  assert.deepEqual(r.log.map((l) => l.ok), [true, true, true]);
+  assert.ok(r.log.every((l) => l.ok));
+  assert.match(r.log[1].text, /Switch 1 forwards it on/);
 });
 
 test('three hubs in a loop are a broadcast storm, and the result names the loop', () => {

@@ -1,4 +1,4 @@
-# Filtering on the way (Patch 2.4.5, with default-deny permissions)
+# Filtering on the way (Patch 2.4.3, with default-deny permissions)
 
 Firewall rules are no longer asked of the two ends only. A router, switch, modem, server or PC that a packet passes through can **drop it with its own policies**, in the order the packet meets them.
 
@@ -77,5 +77,5 @@ On the canvas the device that stopped it gets a red ring, and the log ends there
 
 ## Limits to know about
 
-- The check is one-way: there is no reply path yet, so a return packet isn't filtered.
+- Only a ping has a return trip, and the reply is filtered by the blocking rules (see `docs/ping-reply.md`). Permissions are never asked of a reply.
 - A device filters only a packet that passes through it. A device that merely *hears* a hub's copy ignores it and doesn't filter it.

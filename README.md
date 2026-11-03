@@ -70,7 +70,7 @@ Type uses the system font stack, which is SF Pro on Apple devices (with automati
 
 ## Testing
 
-`npm test` runs 46 tests over the logic layer, including a regression test for each bug found in the 1.x audit.
+`npm test` runs 197 tests over the logic layer, including a regression test for each bug found in the 1.x audit.
 
 The interface was also exercised end to end in a real browser during development (drag from the dock, momentum, undo, linking, IPs, policies, library save and reopen, a complete scenario run, timeout, reduced motion, keyboard-only use, a phone-sized layout). That harness is not part of this repository; see `docs/progress.md` for what was and was not verified. Adding Playwright tests that run against `next dev` is the recommended next step.
 

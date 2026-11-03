@@ -9,15 +9,24 @@ import { PACKET_KINDS, PACKET_ORDER, canBeEndpoint, traceRoute } from '@/lib/pac
 const STEP_MS = 650;
 const SETTLE_MS = 450;
 
+/** What the result says in the pill, and how it is coloured. A ping that arrived but wasn't answered is its own state. */
+const STATUS = {
+  answered: { label: 'Answered', pill: 'sx-pill--ok' },
+  delivered: { label: 'Delivered', pill: 'sx-pill--ok' },
+  unanswered: { label: 'No reply', pill: 'sx-pill--warn' },
+  blocked: { label: 'Blocked', pill: 'sx-pill--danger' },
+};
+
+/** The whole journey the canvas animates: the request, then (for a ping) the reply coming back. */
 const makeTrace = (result, step, done) => ({
-  path: result.path,
+  path: [...result.path, ...(result.reply ? result.reply.path.slice(1) : [])],
   step,
   done,
   ok: result.ok,
   failNode: result.failure?.nodeId ?? null,
   failEdge: result.failure?.edgeId ?? null,
-  copies: result.broadcasts.flatMap((b) => b.edges),
-  heard: result.broadcasts.flatMap((b) => b.heard),
+  copies: [...result.broadcasts, ...(result.reply?.broadcasts ?? [])].flatMap((b) => b.edges),
+  heard: [...result.broadcasts, ...(result.reply?.broadcasts ?? [])].flatMap((b) => b.heard),
 });
 
 /**
@@ -64,7 +73,7 @@ export default function PacketPanel({ doc, onTrace }) {
   const send = () => {
     clearTimers();
     const result = traceRoute(doc, fromId, toId, kind);
-    const last = result.path.length - 1;
+    const last = makeTrace(result, 0, false).path.length - 1;
     setRun({ result, signature });
     setCleared(false);
 
@@ -150,9 +159,9 @@ export default function PacketPanel({ doc, onTrace }) {
       {sending && <p className="sx-caption" role="status">On its way…</p>}
 
       {done && (
-        <div className="sx-packetresult" data-ok={result.ok} role="status">
+        <div className="sx-packetresult" data-ok={result.ok} data-status={result.status} role="status">
           <div className="sx-packetresult__head">
-            <span className={`sx-pill ${result.ok ? 'sx-pill--ok' : 'sx-pill--danger'}`}>{result.ok ? 'Delivered' : 'Blocked'}</span>
+            <span className={`sx-pill ${STATUS[result.status].pill}`}>{STATUS[result.status].label}</span>
             <p className="sx-callout"><strong>{result.ok ? result.summary : result.failure.title}</strong></p>
           </div>
           {!result.ok && <p className="sx-caption">{result.failure.detail}</p>}
