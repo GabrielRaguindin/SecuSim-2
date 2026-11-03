@@ -17,6 +17,7 @@ The sandbox has a **Send a packet** panel. Pick a sender, a receiver and a packe
 | 6a | A device on the route (not a hub) with Restrict outbound traffic, Block untrusted IP or Block ping requests drops the packet; or a web request / file transfer reaches a device that hasn't been given Allow web traffic / File transfer access | `transit-blocked`, `transit-policy` | that device |
 | 6b | A hub on the route copies the packet out of every other port. If the copies meet a hub they already reached, it is a loop | `broadcast-storm` | the first hub on the route |
 | 7 | The receiver's firewall: **Block untrusted IP** (sender on another network), **Block ping requests** (ping), **Allow web traffic** / **File transfer access** | `receiver-blocked` | the receiver (it arrived, then was dropped) |
+| 8 | A ping's receiver sends a reply back the way the request came, through the same devices, with the rules that apply to a reply (Restrict outbound traffic and Block untrusted IP; not Block ping requests) | `reply-blocked` | where the reply stopped |
 
 The numbering above is the order for the sender's checks; the hub flood runs after the route is found and before the receiver's firewall. See `docs/hub-broadcast.md`.
 
@@ -26,7 +27,7 @@ A route that avoids a broken link is used when one exists, so a wrong cable only
 
 | Type | Needs |
 |---|---|
-| Ping | nothing, unless the receiver has Block ping requests on |
+| Ping | nothing, unless a device on the way or the receiver has Block ping requests on. The receiver then **answers**, and the ping only counts once the reply is back (see `docs/ping-reply.md`) |
 | Web | Allow web traffic on the sender, the receiver and every device in between (a hub can't hold a policy, so it never needs it) |
 | File | File transfer access on the sender, the receiver and every device in between (same exception for hubs) |
 
@@ -36,6 +37,7 @@ A route that avoids a broken link is used when one exists, so a wrong cable only
 
 ## In the UI
 
+- A ping's dot goes out and comes back. The pill reads **Answered**, **No reply** (it arrived but the reply was stopped) or **Blocked**.
 - The packet is a dot that moves one hop at a time on a spring. Links it has crossed turn teal.
 - Delivered: the receiver gets a green ring and a check. Blocked: the place it stopped gets a red ring or a red ✕ on the broken link.
 - The result card says Delivered or Blocked, why, how to fix it, and lists each hop.
@@ -54,7 +56,7 @@ A route that avoids a broken link is used when one exists, so a wrong cable only
 
 ## Limits to know about
 
-- One-way: there is no reply, so a ping that arrives is "delivered", not "answered".
+- Only a ping is answered, and the reply always retraces the request's route. See `docs/ping-reply.md`.
 - No ARP, DNS, TTL, MTU or latency. Routers need no addresses on their own interfaces.
 - Every device passes packets along, as in the ring demo on the Learn page, even though real PCs would not forward them.
 - Firewall rules apply at devices in the middle, in path order: the three blocking rules stop a packet when they are on, and the two permissions (Allow web traffic, File transfer access) must be on at every device the packet crosses. See `docs/transit-filtering.md`.

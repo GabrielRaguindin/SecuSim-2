@@ -53,7 +53,9 @@ test('Block untrusted IP on a router with no address guards the network the pack
 });
 
 test('Block untrusted IP on a router with an address trusts that address’s network', () => {
-  assert.equal(send(viaRouter('10.0.0.5', ['blockUntrusted'], '192.168.1.254'), 0, 2).ok, true, 'the sender is on the router’s network');
+  const inOnly = send(viaRouter('10.0.0.5', ['blockUntrusted'], '192.168.1.254'), 0, 2);
+  assert.equal(inOnly.status, 'unanswered', 'the ping gets in, because the sender is on the router’s network, but the reply comes from outside it');
+  assert.equal(inOnly.failure.code, 'reply-blocked');
   const r = send(viaRouter('10.0.0.5', ['blockUntrusted'], '10.0.0.254'), 0, 2);
   assert.equal(r.failure.code, 'transit-blocked');
   assert.match(r.failure.detail, /192\.168\.1\.1 isn’t on Router 1’s network \(10\.0\.0\.0\), so it dropped the packet on the way through/);

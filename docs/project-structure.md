@@ -1,6 +1,6 @@
 # SecuSim 2.0: Project Structure
 
-> **Generated:** 2026-10-14 from the 2.0 working tree (71 files, about 4504 lines of source and styles, about 590 lines of tests).
+> **Generated:** from the working tree after Patch 2.4 (107 files, about 7620 lines of source and styles, about 2616 lines of tests).
 > **Evidence tags:** **[V]** verified by running it · **[R]** verified by reading the code · **[U]** unverified.
 > Not written to GitHub. No repository connection was available, so this is a deliverable to commit.
 
@@ -26,29 +26,38 @@ app/(bench)/sandbox/page.jsx
 app/(bench)/simulator/[id]/page.jsx
 app/(site)/about/page.jsx
 app/(site)/layout.jsx
+app/(site)/learn/addressing/page.jsx
+app/(site)/learn/cabling/page.jsx
 app/(site)/learn/layout.jsx
 app/(site)/learn/page.jsx
 app/(site)/learn/policies/page.jsx
 app/(site)/learn/topologies/page.jsx
 app/(site)/page.jsx
 app/(site)/results/page.jsx
+app/(site)/simulator/edit/[id]/page.jsx
+app/(site)/simulator/new/page.jsx
 app/(site)/simulator/page.jsx
 app/error.jsx
 app/icon.svg
 app/layout.js
 app/manifest.js
 app/not-found.jsx
+components/download.js
 components/home/HeroRing.jsx
 components/hooks.js
 components/learn/LearnTabs.jsx
 components/learn/TopologyDiagram.jsx
 components/learn/TopologyLesson.jsx
 components/results/ResultsList.jsx
+components/sandbox/PacketPanel.jsx
 components/sandbox/Sandbox.jsx
+components/scenarios/ScenarioBuilder.jsx
 components/shell/SiteFooter.jsx
 components/shell/SiteNav.jsx
 components/simulator/ResultSheet.jsx
+components/simulator/ScenarioArt.jsx
 components/simulator/ScenarioList.jsx
+components/simulator/ScenarioRunner.jsx
 components/simulator/Simulator.jsx
 components/simulator/TimerRing.jsx
 components/ui/CheckList.jsx
@@ -56,14 +65,29 @@ components/ui/DeviceGlyph.jsx
 components/ui/Icon.jsx
 components/ui/Segmented.jsx
 components/ui/Sheet.jsx
+components/ui/Stepper.jsx
 components/ui/Switch.jsx
 components/ui/Toast.jsx
+components/workbench/AddressPlan.jsx
 components/workbench/DeviceDock.jsx
 components/workbench/Inspector.jsx
 components/workbench/NetworkCanvas.jsx
 components/workbench/Toolbar.jsx
 components/workbench/Workbench.jsx
+docs/custom-scenarios.md
+docs/devices-addressing-cabling.md
+docs/hub-broadcast.md
+docs/layer1-hubs.md
+docs/packets.md
+docs/ping-reply.md
+docs/progress.md
+docs/project-structure.md
+docs/recommendation.md
+docs/switch.md
+docs/transit-filtering.md
 jsconfig.json
+lib/cabling.js
+lib/customScenarios.js
 lib/devices.js
 lib/format.js
 lib/ip.js
@@ -71,24 +95,36 @@ lib/layouts.js
 lib/lessons.js
 lib/network.js
 lib/networkReducer.js
+lib/packets.js
 lib/pdf.js
 lib/policies.js
+lib/resolveScenario.js
 lib/scenarios.js
 lib/spring.js
 lib/storage.js
 next.config.mjs
 package.json
+styles/builder.css
 styles/pages.css
 styles/tokens.css
 styles/ui.css
 styles/workbench.css
+tests/cabling.test.js
+tests/customScenarios.test.js
 tests/fixtures.js
 tests/helpers.js
+tests/hub-broadcast.test.js
+tests/ip.test.js
+tests/layer1.test.js
 tests/layouts.test.js
 tests/network.test.js
+tests/packets.test.js
+tests/ping-reply.test.js
 tests/reducer.test.js
 tests/scenarios.test.js
 tests/storage.test.js
+tests/switch.test.js
+tests/transit.test.js
 ```
 
 ## Architecture [R]
@@ -98,6 +134,7 @@ tests/storage.test.js
 3. **One editor** (`components/workbench/Workbench.jsx`) serves both the sandbox and the simulator. The simulator wraps it with a brief, a countdown, a requirements panel and result sheets.
 4. **Scenarios are data plus checks** (`lib/scenarios.js`). Server components pass only ids to client components, because scenarios contain functions.
 5. **Route groups:** `(site)` pages have the footer; `(bench)` pages are the full-height workbench.
+6. **One packet engine** (`lib/packets.js`): `traceRoute` is a pure function of the document. It finds the route, then meets the devices on it in order (hubs copy, other devices filter), and answers a ping with a reply. The sandbox's packet panel only draws its result.
 
 ## Feature to file map [R]
 
@@ -110,10 +147,14 @@ tests/storage.test.js
 | Save and open topologies | `components/sandbox/Sandbox.jsx`, `lib/storage.js` |
 | Results and PDF | `components/results/ResultsList.jsx`, `lib/storage.js`, `lib/pdf.js` |
 | Lessons | `components/learn/*`, `lib/lessons.js`, `lib/layouts.js` |
-| Design system | `styles/tokens.css`, `styles/ui.css` |
+| Custom scenarios | `lib/customScenarios.js`, `components/scenarios/ScenarioBuilder.jsx`, `lib/storage.js` |
+| Devices (router, switch, hub, PC, server, modem) and the Layer 1 hub rule | `lib/devices.js`, `components/ui/DeviceGlyph.jsx` |
+| IP classes and cabling | `lib/ip.js`, `lib/cabling.js`, `components/workbench/AddressPlan.jsx` |
+| Sending a packet: route, hub copies, storms, filtering on the way, ping replies | `lib/packets.js`, `components/sandbox/PacketPanel.jsx`, `components/workbench/NetworkCanvas.jsx` |
+| Design system | `styles/tokens.css`, `styles/ui.css`, `styles/workbench.css`, `styles/builder.css` |
 
 ## Testing [V]
 
-- `npm test` runs **46** tests, all passing at generation time.
-- Covered: graph helpers, IP validation, spring maths, the reducer and history, every scenario (reference solutions plus a regression for each 1.x bug), storage (with a fake store), diagram layouts, PDF text.
-- Not covered in the repository: components and end-to-end flows. They were exercised in a browser harness during development (see `progress.md`) but that harness is not shipped.
+- `npm test` runs **197** tests, all passing at generation time.
+- Covered: graph helpers, IP validation and classes, cabling, spring maths, the reducer and history, every built-in scenario (reference solutions plus a regression for each 1.x bug), custom scenarios, the Layer 1 hub rule, the Switch, packet tracing (routes, hub copies, broadcast storms, filtering on the way, ping replies, with seeded randomized checks against independent statements of the rules), storage (with a fake store), diagram layouts, PDF text.
+- Not covered in the repository: components and end-to-end flows. They were exercised in a headless Chromium harness during development (see `progress.md`) but that harness is not shipped.

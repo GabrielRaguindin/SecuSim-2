@@ -19,30 +19,40 @@
 * Updated Hub's Logic, it is now the one and only device that cannot be assigned an IP Address and Security Policies.
 * Revised and replaced the policy requirements for Scenarios 2 and 3 so they make logical sense in a real-world networking context.
 
+## Patch 2.4: Enhance Network Traffic Experience
+**Overview:** This update introduces a new networking device, updates hub behavior, expands security policy enforcement across intermediate devices, and clarifies ping request/response dynamics.
+
+### 2.4.1 — New Device Introduced
+* **The Switch:** A new networking device on the device dock, placed between the Router and the Hub.
+  * It is a managed switch: unlike the Hub, it **can hold an IP address and security policies**, and it can send and receive packets.
+  * For cabling it behaves like a hub port: straight-through to PCs, servers and routers, crossover to another switch, a hub or a modem.
+  * It delivers a packet only along its route. It never copies a packet to the devices on its other ports, so it stays distinct from the Hub.
+  * It is available in the sandbox, the custom scenario builder (as a device count, a rule target and a star center) and the Learn pages.
+
+### 2.4.2 — Hub Behavior Update
+* **Strict Broadcaster:** The Hub now operates strictly as a packet broadcaster. It duplicates and sends any incoming packet out through all connected ports except the receiving port, over links with the right cable.
+  * A copy stops at any device that isn't a hub. If that device isn't the target, it ignores the packet, and the result says so.
+  * **Broadcast storm detection:** if the copies reach a hub they have already reached, the hubs form a loop. The packet stops with a "broadcast storm" result that names every hub in the loop and the link to remove.
+
+### 2.4.3 — Expanded Security Enforcement
+* **Intermediate Device Filtering:** Security policies are no longer restricted to the two terminating endpoints. Rules and policies now apply to intermediate devices (Switches, Routers, Modems, Servers and PCs) along the traffic path, in the order the packet meets them. The first device that objects stops the packet, and the result names it.
+  * **Blocking rules** stop a packet wherever they are on: Restrict outbound traffic, Block untrusted IP, Block ping requests.
+  * **Permissions are default deny:** Allow web traffic and File transfer access must be on at the sender, the receiver and every device in between. A device without the permission won't carry that kind of packet.
+  * Hubs can't hold policies, so they never filter and never need a permission.
+  * Quality of service, encryption and access-control policies still never affect delivery.
+
+### 2.4.4 — Ping Mechanics
+* **Answered Status:** When a ping packet successfully reaches an endpoint, and the reply makes it back, it is marked as **"Answered"**. A ping that arrived but whose reply was stopped is marked **"No reply"**.
+* **Request/Response Cycle:** The receiving endpoint device automatically generates and sends a "response" back to the original source following a received "request". The reply goes back along the same route and is checked by the same devices on the way.
+  * Block ping requests stops the request, never the reply. Restrict outbound traffic and Block untrusted IP apply to the reply too.
+
+> **Numbering note:** the original 2.4.3 (Targeted Delivery vs. Broadcasting) was dropped, because the Switch and the Hub already behave that way: the Hub copies to everyone and the Switch delivers only along its route. The original 2.4.5 (Expanded Security Enforcement) became 2.4.3.
+
 ---
 
 # INCOMING PATCH
-## Patch 2.4: Enhance Network Traffic Experience
-**Overview:** This update introduces a new networking device, updates hub behavior, clarifies ping request/response dynamics, and expands security policy enforcement across intermediate devices.
-
-## Patch Details
-### 2.4.1 — New Device Introduced
-* **The Switch:** A new networking device to be added on the device dock.
-
-### 2.4.2 — Hub Behavior Update
-* **Strict Broadcaster:** The Hub now operates strictly as a packet broadcaster. It duplicates and sends any incoming packet out through all connected ports except the receiving port.
-
-### 2.4.3 — Targeted Delivery vs. Broadcasting
-* **Device Selection:** 
-  * Use **The Switch** to deliver packets specifically to an intended target endpoint.
-  * Use **The Hub** when broadcasting is desired. Remember: the Hub will *always* broadcast incoming packets to every connected endpoint.
-
-### 2.4.4 — Ping Mechanics
-* **Answered Status:** When a ping packet successfully reaches an endpoint, it is marked as **"Answered"**.
-* **Request/Response Cycle:** The receiving endpoint device will automatically generate and send a "response" back to the original source following a received "request".
-
-### 2.4.5 — Expanded Security Enforcement
-* **Intermediate Device Filtering:** Security policies are no longer restricted to the two terminating endpoints. Rules and policies now apply to intermediate devices (e.g., Switches/Routers) along the traffic path.
+## Patch 2.5
+*(Outline to follow.)*
 
 ---
 
