@@ -64,7 +64,7 @@ function AutoIpMenu({ onPick, disabled }) {
   );
 }
 
-export default function Toolbar({ tool, setTool, cable, setCable, canUndo, canRedo, onUndo, onRedo, onDelete, canDelete, onAutoIps, onClear, hasNodes, disabled, extra }) {
+export default function Toolbar({ tool, setTool, cable, setCable, canUndo, canRedo, onUndo, onRedo, onDelete, canDelete, onAutoIps, onClear, onSelectAll, hasNodes, disabled, extra }) {
   return (
     <div className="sx-toolbar">
       <div className="sx-glass sx-toolbar__group" role="toolbar" aria-label="Tools">
@@ -92,6 +92,9 @@ export default function Toolbar({ tool, setTool, cable, setCable, canUndo, canRe
       </div>
 
       <div className="sx-glass sx-toolbar__group" role="toolbar" aria-label="Actions">
+        <button type="button" className="sx-iconbtn" onClick={onSelectAll} disabled={disabled || !hasNodes} aria-label="Select all devices" title="Select all devices (Ctrl or ⌘ A)">
+          <Icon name="selectAll" />
+        </button>
         <AutoIpMenu onPick={onAutoIps} disabled={disabled || !hasNodes} />
         <button type="button" className="sx-iconbtn" onClick={onDelete} disabled={disabled || !canDelete} aria-label="Delete selection" title="Delete selection (Delete)">
           <Icon name="trash" />

@@ -6,6 +6,10 @@ export const metadata = {
 const SHORTCUTS = [
   ['V', 'Select and move tool'],
   ['L', 'Link tool'],
+  ['Double-click or double-tap', 'Edit a device or a link'],
+  ['Enter', 'Edit the focused device, or every selected device if it is one of them'],
+  ['E', 'Edit the selection'],
+  ['Space', 'Select the focused device (hold Shift to add to the selection)'],
   ['Delete', 'Remove the selection'],
   ['C', 'Switch the cable used for new links'],
   ['Ctrl or ⌘ + Z', 'Undo'],

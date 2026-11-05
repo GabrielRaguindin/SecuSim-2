@@ -9,6 +9,8 @@ const ICONS = {
   check: <path d="M20 6L9 17l-5-5" />,
   x: (<><path d="M18 6L6 18" /><path d="M6 6l12 12" /></>),
   clock: (<><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></>),
+  selectAll: (<><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></>),
+  edit: (<><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></>),
   plus: (<><path d="M12 5v14" /><path d="M5 12h14" /></>),
   chevronRight: <path d="M9 18l6-6-6-6" />,
   chevronDown: <path d="M6 9l6 6 6-6" />,

@@ -62,7 +62,7 @@ export default function AddressingPage() {
         <div className="sx-lesson__text">
           <h2 id="special-title" className="sx-title-1">Addresses a device can’t use</h2>
           <p className="sx-lead">Some addresses do a job of their own.</p>
-          <p className="sx-body">SecuSim refuses these when you type them, and tells you why. Pick a class in the inspector for a valid starting address.</p>
+          <p className="sx-body">SecuSim refuses these when you type them, and tells you why. Open a device (double-click it) and pick a class for a valid starting address.</p>
         </div>
         <ul className="sx-controls" aria-label="Special addresses">
           {SPECIAL.map(([name, what]) => (

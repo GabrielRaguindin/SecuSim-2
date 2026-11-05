@@ -1,6 +1,6 @@
 # SecuSim 2.0: Project Structure
 
-> **Generated:** from the working tree after Patch 2.4 (107 files, about 7620 lines of source and styles, about 2616 lines of tests).
+> **Generated:** from the working tree after Patch 2.5.1 (114 files, about 8151 lines of source and styles, about 2837 lines of tests).
 > **Evidence tags:** **[V]** verified by running it · **[R]** verified by reading the code · **[U]** unverified.
 > Not written to GitHub. No repository connection was available, so this is a deliverable to commit.
 
@@ -68,13 +68,16 @@ components/ui/Sheet.jsx
 components/ui/Stepper.jsx
 components/ui/Switch.jsx
 components/ui/Toast.jsx
+components/workbench/ActionBar.jsx
 components/workbench/AddressPlan.jsx
 components/workbench/DeviceDock.jsx
-components/workbench/Inspector.jsx
+components/workbench/DeviceEditor.jsx
+components/workbench/LinkPopover.jsx
 components/workbench/NetworkCanvas.jsx
 components/workbench/Toolbar.jsx
 components/workbench/Workbench.jsx
 docs/custom-scenarios.md
+docs/device-editor.md
 docs/devices-addressing-cabling.md
 docs/hub-broadcast.md
 docs/layer1-hubs.md
@@ -88,13 +91,16 @@ docs/transit-filtering.md
 jsconfig.json
 lib/cabling.js
 lib/customScenarios.js
+lib/deviceEditor.js
 lib/devices.js
 lib/format.js
+lib/hints.js
 lib/ip.js
 lib/layouts.js
 lib/lessons.js
 lib/network.js
 lib/networkReducer.js
+lib/overlays.js
 lib/packets.js
 lib/pdf.js
 lib/policies.js
@@ -111,6 +117,7 @@ styles/ui.css
 styles/workbench.css
 tests/cabling.test.js
 tests/customScenarios.test.js
+tests/device-editor.test.js
 tests/fixtures.js
 tests/helpers.js
 tests/hub-broadcast.test.js
@@ -131,7 +138,7 @@ tests/transit.test.js
 
 1. **`lib/` decides, components draw.** Everything with rules in it (network document, history, scenario checks, storage, geometry, spring maths, PDF text) is React-free and covered by `tests/`.
 2. **One document model** (`lib/networkReducer.js`): `{ nodes, edges, policies, seq }`, with undo and redo. Policies are keyed by device id. Edges are keyed by the sorted pair, so a pair links once.
-3. **One editor** (`components/workbench/Workbench.jsx`) serves both the sandbox and the simulator. The simulator wraps it with a brief, a countdown, a requirements panel and result sheets.
+3. **One editor** (`components/workbench/Workbench.jsx`) serves both the sandbox and the simulator. Nothing is configured in its sidebar: a device is edited in a modal and a link in a popover. The simulator wraps it with a brief, a countdown, a requirements panel and result sheets.
 4. **Scenarios are data plus checks** (`lib/scenarios.js`). Server components pass only ids to client components, because scenarios contain functions.
 5. **Route groups:** `(site)` pages have the footer; `(bench)` pages are the full-height workbench.
 6. **One packet engine** (`lib/packets.js`): `traceRoute` is a pure function of the document. It finds the route, then meets the devices on it in order (hubs copy, other devices filter), and answers a ping with a reply. The sandbox's packet panel only draws its result.
@@ -142,7 +149,8 @@ tests/transit.test.js
 |---|---|
 | Canvas gestures (drag, momentum, link, keyboard) | `components/workbench/NetworkCanvas.jsx`, `lib/spring.js` |
 | Device dock (drag or tap to add) | `components/workbench/DeviceDock.jsx`, `lib/network.js` (`nextFreeSpot`) |
-| IP and policy editing | `components/workbench/Inspector.jsx`, `lib/networkReducer.js`, `lib/policies.js`, `lib/ip.js` |
+| Device editor (name, address, policies, several devices at once) | `components/workbench/DeviceEditor.jsx`, `lib/deviceEditor.js`, `lib/networkReducer.js`, `lib/policies.js`, `lib/ip.js` |
+| Link popover, action bar, first-use hints | `components/workbench/LinkPopover.jsx`, `components/workbench/ActionBar.jsx`, `lib/overlays.js`, `lib/hints.js` |
 | Scenario grading | `lib/scenarios.js`, `components/simulator/*` |
 | Save and open topologies | `components/sandbox/Sandbox.jsx`, `lib/storage.js` |
 | Results and PDF | `components/results/ResultsList.jsx`, `lib/storage.js`, `lib/pdf.js` |
@@ -155,6 +163,6 @@ tests/transit.test.js
 
 ## Testing [V]
 
-- `npm test` runs **197** tests, all passing at generation time.
-- Covered: graph helpers, IP validation and classes, cabling, spring maths, the reducer and history, every built-in scenario (reference solutions plus a regression for each 1.x bug), custom scenarios, the Layer 1 hub rule, the Switch, packet tracing (routes, hub copies, broadcast storms, filtering on the way, ping replies, with seeded randomized checks against independent statements of the rules), storage (with a fake store), diagram layouts, PDF text.
+- `npm test` runs **217** tests, all passing at generation time.
+- Covered: graph helpers, renaming, the editor's policy counts, where overlays sit, first-use hints, IP validation and classes, cabling, spring maths, the reducer and history, every built-in scenario (reference solutions plus a regression for each 1.x bug), custom scenarios, the Layer 1 hub rule, the Switch, packet tracing (routes, hub copies, broadcast storms, filtering on the way, ping replies, with seeded randomized checks against independent statements of the rules), storage (with a fake store), diagram layouts, PDF text.
 - Not covered in the repository: components and end-to-end flows. They were exercised in a headless Chromium harness during development (see `progress.md`) but that harness is not shipped.

@@ -12,6 +12,8 @@ import { usePrefersReducedMotion } from '@/components/hooks.js';
 const HALF = NODE_SIZE / 2;
 const HIT_RADIUS = 46;
 const MAX_THROW = 2600;
+const DOUBLE_MS = 380; // two taps this close together, and this close in space, are a double-tap
+const DOUBLE_PX = 14;
 
 /**
  * The drawing surface. Positions are in CSS pixels relative to the canvas.
@@ -22,8 +24,12 @@ const MAX_THROW = 2600;
  *  - Link tool: drag from one device to another, or click one then the other.
  *    New links use the cable chosen in the toolbar. A link with the wrong cable for its two devices is flagged.
  *  - Shift/Cmd/Ctrl click adds to the selection. Arrow keys nudge the selection.
+ *  - Double-click or double-tap a device (or a link) to edit it. Enter on a device edits it too, and edits
+ *    the whole selection when the device is part of one. Space selects.
+ *    A double-tap is found here from the pointer events, because the browser's own dblclick is unreliable
+ *    on a surface that has touch gestures switched off.
  */
-export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool, size, disabled, newNodeId, onLinkRejected, linkFrom, setLinkFrom, cable, trace }) {
+export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool, size, disabled, newNodeId, onLinkRejected, linkFrom, setLinkFrom, cable, trace, onEditNodes, onEditLink }) {
   const svgRef = useRef(null);
   const drag = useRef(null);
   const anim = useRef(null);
@@ -37,8 +43,18 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
   sizeRef.current = size;
 
   const reduced = usePrefersReducedMotion();
+  const lastTap = useRef(null);
   const [cursor, setCursor] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
+
+  /** Records a tap, and says whether it completes a double-tap on the same thing. */
+  const isDoubleTap = (kind, id, p) => {
+    const now = performance.now();
+    const prev = lastTap.current;
+    const double = Boolean(prev) && prev.kind === kind && prev.id === id && now - prev.t < DOUBLE_MS && Math.hypot(p.x - prev.x, p.y - prev.y) < DOUBLE_PX;
+    lastTap.current = double ? null : { kind, id, t: now, x: p.x, y: p.y };
+    return double;
+  };
 
   const toLocal = (e) => {
     const rect = svgRef.current.getBoundingClientRect();
@@ -153,6 +169,8 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
     }
     drag.current = {
       mode: 'move',
+      nodeId: node.id,
+      additive,
       ids,
       start: p,
       origins,
@@ -218,8 +236,10 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
 
     if (!d.moved) {
       if (d.collapseTo) onSelect({ nodes: [d.collapseTo], edge: null });
+      if (!d.additive && isDoubleTap('node', d.nodeId, p)) onEditNodes?.([d.nodeId]);
       return;
     }
+    lastTap.current = null;
     if (!reduced) startMomentum(d.ids, velocityFromSamples(d.samples));
   };
 
@@ -244,6 +264,13 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
         return;
       }
       const current = selRef.current.nodes;
+      if (e.key === 'Enter' && !additive && onEditNodes) {
+        // Enter edits: the whole selection when this device is part of it, otherwise just this device.
+        const ids = current.includes(node.id) ? current : [node.id];
+        if (!current.includes(node.id)) onSelect({ nodes: ids, edge: null });
+        onEditNodes(ids);
+        return;
+      }
       const next = additive
         ? current.includes(node.id) ? current.filter((i) => i !== node.id) : [...current, node.id]
         : [node.id];
@@ -371,6 +398,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
                   if (disabled) return;
                   e.stopPropagation();
                   onSelect({ nodes: [], edge: edge.id });
+                  if (tool === 'select' && isDoubleTap('edge', edge.id, toLocal(e))) onEditLink?.(edge.id);
                 }}
               >
                 <title>{`${a.name} to ${b.name}: ${cableLabel(edge.cable).toLowerCase()} cable${wrong ? `, but this link needs ${cableLabel(need).toLowerCase()}` : ''}`}</title>

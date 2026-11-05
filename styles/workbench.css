@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Workbench: canvas, toolbar, device dock, inspector, session panel
+   Workbench: canvas, toolbar, device dock, device editor, link popover, session panel
    ========================================================================== */
 
 .sx-glass {
@@ -31,7 +31,7 @@
 
 .sx-bench {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-columns: minmax(0, 1fr) 330px;
   gap: 16px;
   padding: 8px 16px 16px;
   height: calc(100dvh - var(--nav-h));
@@ -213,7 +213,7 @@
 
 .sx-dock__icon,
 .sx-dock__ghost,
-.sx-inspector__tile {
+.sx-editor__tile {
   display: grid;
   place-items: center;
   color: #fff;
@@ -238,21 +238,8 @@
 [data-type='server'] { --tile: var(--dev-server); --tile-top: var(--dev-server-top); }
 [data-type='modem'] { --tile: var(--dev-modem); --tile-top: var(--dev-modem-top); }
 
-/* ---------- Inspector ---------- */
+/* ---------- Device editor (a modal), link popover, action bar, hints ---------- */
 
-.sx-inspector__head { display: flex; align-items: center; gap: 14px; }
-.sx-inspector__tile { flex: none; width: 52px; height: 52px; border-radius: 16px; }
-.sx-inspector__tile--multi { --tile: var(--accent); --tile-top: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 1.25rem; }
-.sx-inspector__text { margin-top: -6px; }
-
-.sx-tips { display: grid; gap: 12px; }
-.sx-tips li { display: grid; grid-template-columns: 20px 1fr; gap: 12px; align-items: start; color: var(--label-2); font-size: 0.9375rem; line-height: 1.35; }
-.sx-tips svg { margin-top: 1px; color: var(--accent); }
-
-.sx-policies { display: grid; gap: 20px; }
-.sx-policies__group { display: grid; gap: 4px; }
-.sx-policies__head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 4px; border-bottom: 1px solid var(--separator); }
-.sx-policies__head h4 { font-weight: 650; }
 .sx-policy { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; }
 .sx-policy + .sx-policy { border-top: 1px solid var(--separator); }
 
@@ -385,7 +372,6 @@
 
 /* ---------- Addressing: class picker, details, plan ---------- */
 
-.sx-ipinfo { display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); }
 .sx-plan { gap: 14px; }
 .sx-plan__group { display: grid; gap: 6px; }
 .sx-plan__head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -429,12 +415,9 @@
 .sx-trace__badge[data-kind='fail'] circle { fill: var(--danger); }
 
 .sx-packet-panel { gap: 14px; }
-.sx-packet-panel__pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: end; }
-.sx-packet-panel__swap { margin-bottom: 4px; }
-@media (max-width: 1100px) {
-  .sx-packet-panel__pair { grid-template-columns: 1fr; }
-  .sx-packet-panel__swap { justify-self: start; margin: 0; }
-}
+/* From and To stack, so a device's name and address are never cut off in a narrow sidebar. */
+.sx-packet-panel__pair { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: end; }
+.sx-packet-panel__swap { justify-self: start; margin: 0; }
 .sx-packet-panel .sx-select { text-overflow: ellipsis; }
 
 .sx-packetresult { display: grid; gap: 8px; padding: 14px; border-radius: var(--r-md); background: var(--surface-2); }
@@ -451,6 +434,65 @@
 
 .sx-packet-panel__route { margin-top: -6px; }
 
-/* ---------- A Layer 1 device (hub) in the inspector ---------- */
+/* ---------- A Layer 1 device (hub) in the editor ---------- */
 
 .sx-layer1 { display: grid; gap: 4px; padding: 12px 14px; border-radius: var(--r-sm); background: var(--surface-2); }
+
+/* The editor: a header with the tile, the name and a line about the device; an address; four categories. */
+.sx-editor { display: grid; gap: 18px; margin-top: 14px; }
+.sx-editor__section { display: grid; gap: 8px; }
+.sx-editor__head { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1; }
+.sx-editor__tile { flex: none; width: 52px; height: 52px; border-radius: 16px; }
+.sx-editor__tile--multi { --tile: var(--accent); --tile-top: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 1.25rem; }
+.sx-editor__who { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.sx-editor__namefield { display: grid; gap: 4px; }
+.sx-editor__name { height: 40px; font-size: 1.25rem; font-weight: 650; letter-spacing: -0.016em; padding: 0 12px; background: transparent; box-shadow: inset 0 0 0 1px transparent; }
+.sx-editor__name:hover { background: var(--surface-2); }
+.sx-editor__name:focus-visible { background: var(--surface); }
+.sx-editor__iprow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.sx-editor__iprow .sx-input { flex: 1 1 180px; min-width: 0; }
+.sx-editor__iprow .sx-chip { padding: 8px 12px; font-size: 0.875rem; }
+.sx-editor__actions .sx-btn--danger { margin-right: auto; }
+/* The footer stays pinned to the bottom of the editor, so Done and Remove are never scrolled out of reach
+   when a category is open. (On a phone the sheet's own sticky footer already does this.) */
+@media (min-width: 641px) {
+  .sx-editor__actions { position: sticky; bottom: -28px; margin: 14px -28px -28px; padding: 14px 28px 20px; background: var(--surface); box-shadow: 0 -1px 0 var(--separator); }
+}
+.sx-acc__body .sx-policy { padding: 8px 0; }
+
+/* Policy categories: one open at a time. */
+.sx-acc { border-radius: var(--r-md); background: var(--surface-2); overflow: hidden; }
+.sx-acc__item + .sx-acc__item { border-top: 1px solid var(--separator); }
+.sx-acc__title { margin: 0; font: inherit; }
+.sx-acc__head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 16px; border: 0; border-radius: 0; background: transparent; color: var(--label); text-align: left; font-weight: 600; transition: background-color 0.2s; }
+.sx-acc__head:hover { background: var(--accent-tint); }
+.sx-acc__label { flex: 1; }
+.sx-acc__head .sx-pill[data-tone='on'] { background: var(--accent-tint); color: var(--accent); }
+.sx-acc__chevron { display: grid; color: var(--label-3); transition: transform 0.5s var(--spring-soft); }
+.sx-acc__item[data-open='true'] .sx-acc__chevron { transform: rotate(180deg); }
+.sx-acc__body { padding: 0 16px 6px; animation: sx-fade 0.25s ease-out both; }
+
+@keyframes sx-rise { from { opacity: 0; transform: translateY(6px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+/* The bar that floats by a selected device or link. */
+.sx-actionbar { position: absolute; z-index: 20; display: flex; gap: 2px; padding: 4px; border-radius: 999px; animation: sx-rise 0.4s var(--spring-soft) both; }
+.sx-actionbar__btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--label); font-size: 0.875rem; font-weight: 600; white-space: nowrap; transition: background-color 0.2s, transform 0.45s var(--spring-snappy); }
+.sx-actionbar__btn:hover { background: var(--accent-tint); color: var(--accent); }
+.sx-actionbar__btn:active { transform: scale(0.94); transition-duration: 0.1s; }
+.sx-actionbar__btn[data-danger='true']:hover { background: var(--danger-tint); color: var(--danger); }
+
+/* The popover for a link. */
+.sx-popover { position: absolute; z-index: 25; width: 300px; display: grid; gap: 14px; padding: 16px; border-radius: var(--r-lg); outline: none; animation: sx-rise 0.4s var(--spring-soft) both; }
+.sx-popover__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.sx-popover .sx-seg { width: 100%; }
+.sx-popover .sx-seg__item { padding-inline: 8px; }
+
+/* First-use hints. */
+.sx-hint { position: absolute; z-index: 15; left: 50%; top: 76px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; width: max-content; max-width: min(560px, calc(100% - 32px)); padding: 10px 10px 10px 16px; border-radius: var(--r-lg); }
+.sx-hint__icon { display: grid; color: var(--accent); flex: none; }
+.sx-hint p { color: var(--label); }
+@media (max-width: 640px) {
+  .sx-hint { top: 140px; align-items: flex-start; flex-wrap: wrap; }
+  .sx-hint .sx-btn { margin-left: auto; }
+  .sx-popover { width: min(300px, calc(100% - 16px)); }
+}
