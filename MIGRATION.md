@@ -6,7 +6,7 @@
 |---|---|---|
 | Canvas | vis-network, with DOM-to-canvas coordinate mixing | Own SVG canvas, pointer events, one coordinate system |
 | Scenarios | Three components of about 900 lines, 95% identical | One `Simulator` driven by data in `lib/scenarios.js` |
-| Validation | Inline in components, untestable | Pure functions in `lib/`, 197 tests |
+| Validation | Inline in components, untestable | Pure functions in `lib/`, 217 tests |
 | Persistence | Server memory (lost on restart) and unrelated `localStorage` keys | Namespaced `localStorage` only. No API routes |
 | Policies keyed by | IP address (orphaned and ghost entries) | Stable device id |
 | UI kit | flowbite-react, Tailwind | Hand-written CSS design system (tokens, springs, materials) |

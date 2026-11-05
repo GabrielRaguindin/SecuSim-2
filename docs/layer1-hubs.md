@@ -23,13 +23,13 @@ The rule has **one definition** and every layer asks it.
 | Grading | `lib/scenarios.js` | Every address and policy check works on the devices that *can* hold them (`context.addressable`). A hub is never asked for an address and never counted. Messages say the hubs were left out |
 | Custom scenarios | `lib/customScenarios.js` | A hub is dropped from every policy rule's device types (also on import). A rule that names only hubs is refused. A scenario that needs addresses but has only hubs is refused. Labels say "every device except the hubs" when hubs are placed |
 | Packets | `lib/packets.js` | `canBeEndpoint` uses `canHaveIp`. A hub can't send or receive, but a packet still crosses one |
-| Inspector | `components/workbench/Inspector.jsx` | Selecting a hub shows a Layer 1 explanation instead of the address and policy controls. In a mixed selection the switches act on the other devices and a line says the hubs are skipped |
+| Device editor | `components/workbench/DeviceEditor.jsx` | Opening a hub shows a Layer 1 explanation instead of the address and policy controls. In a mixed selection the switches act on the other devices and a line says the hubs are skipped |
 | Canvas | `components/workbench/NetworkCanvas.jsx` | A hub never shows an address or a policy badge. A screen reader hears "no IP address or policies (Layer 1)" |
 | Address plan | `components/workbench/AddressPlan.jsx` | Hubs are listed as "No address needed", never as "No address yet" |
 | Rule builder | `components/scenarios/ScenarioBuilder.jsx` | A policy rule never offers hubs as a device type, and a new rule never starts on one |
 | Learn | `app/(site)/learn/addressing`, `learn/policies` | Both lessons explain the exception |
 
-Because the document layer enforces it, nothing can bypass it: not the inspector, not a keyboard shortcut, not a saved file, not an imported scenario.
+Because the document layer enforces it, nothing can bypass it: not the device editor, not a keyboard shortcut, not a saved file, not an imported scenario.
 
 ## The built-in scenarios, after this change
 

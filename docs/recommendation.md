@@ -51,8 +51,36 @@
 ---
 
 # INCOMING PATCH
-## Patch 2.5
-*(Outline to follow.)*
+## Patch 2.5: Absolute UI Fix and Optimizations
+**Reason:** testers found the application hard to use. Everything beside the canvas was overwhelming.
+
+### 1. [HIGH PRIORITY] Sandbox UI Optimization
+*(Because putting all the stuff beside the canvas is too overwhelming)*
+* Integrate "double click" on the devices and inside it their respective configuration instead of clumping everything on the right side. A modal will appear and in that modal the Device Name, IP Address Setting, and Policies in form of a category dropdown but keeping the toggle switch for each so that it won't be messy and stupidly long.
+* Double click a cable and a tooltip will appear bearing the information about the link, the change cable selection and remove link option.
+* The only stuff I want to see beside the canvas is the send packet and address plan. All the configuration part including the information and selections must be out of it.
+
+### Delivery plan
+Delivered in smaller patches, like 2.4.
+
+**2.5.1: Take configuration out of the sidebar. (Implemented)**
+* **Device editor modal:** header with the device icon, an editable name and a one-line description; the IP address and class chips on one row with a single summary line ("Class C, private, 192.168.1.0/24"); four collapsible policy categories, one open at a time, each showing how many are on, with a toggle per policy; Remove device and Done in a pinned footer. Changes apply as you make them, and each can be undone.
+* **Link popover** on double-clicking a cable: the link's information, the cable choice and Remove link.
+* **Entry points:** double-click or double-tap, Enter on a focused device, E on a selection, and a small Edit / Link / Delete bar beside the selected device (it moves out of the way of neighbouring devices).
+* **Sidebar:** only Send a packet and Address plan stay. The simulator keeps its timer and requirements beside the canvas and gets the same editor. The Inspector is deleted and the sidebar is narrower.
+* **Rename logic (new):** 1 to 24 characters, unique among devices ignoring case, with the reason shown when a name is refused.
+* **Multi-select editing and Select all:** several selected devices open one editor for all their policies, which makes default-deny quick to set up.
+* **First-use hints** on the canvas replace the sidebar's tips, one at a time, and are remembered.
+
+**2.5.2: Make what's left fast. (Planned)**
+* Labels on the toolbar icons, which are cryptic and have no hover on touch.
+
+**2.5.3: Polish and verify. (Planned)**
+* A pass over the simulator, the phone layout and keyboard use, and an optional collapsible sidebar.
+
+**Later (agreed to wait so the patches stay small):**
+* **One-click fixes** in the packet result: the "To fix it" line becomes a button the learner chooses to press (turn on a policy, change a cable).
+* Changing how links are created (the Link tool and choosing a cable beforehand), which is also confusing but would make 2.5.1 too large to test well.
 
 ---
 

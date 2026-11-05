@@ -19,7 +19,7 @@ A device's class is **worked out from its address, never stored**, so the two ca
 **Addresses a device can no longer have** (with a reason shown): the network address (host bits all 0), the broadcast address (host bits all 1), loopback (127.x.x.x), anything starting with 0, Class D (multicast) and Class E (reserved). Saved networks drop an address like this when they load.
 
 **In the UI**
-- Inspector: a class picker (gives the next free address in that class) and the address details (class, public or private, network, mask, broadcast).
+- Device editor (double-click a device): the IP field with a class picker (gives the next free address in that class), and one line saying what the address is (class, public or private, network and prefix).
 - Toolbar: the lightning button is now a menu. Choosing a class gives every device that is not already in it the next free address from that class. Devices already in the class keep their address.
 - Sidebar: an **Address plan** panel groups every addressed device by class and network.
 - Learn: a new **Addressing** page, generated from the same class table the app uses.
@@ -35,12 +35,12 @@ Every link now has a `cable`: `'straight'` or `'crossover'` (default `'straight'
 | transmit | PC, Server, Router | transmit |
 | receive | Hub, Switch, Modem | receive |
 
-A link between **unlike** groups needs **straight-through**. A link between **like** groups needs **crossover**. `requiredCable(typeA, typeB)` is the one place this rule lives; the canvas, inspector, grading, custom scenario solver and the Learn page all call it.
+A link between **unlike** groups needs **straight-through**. A link between **like** groups needs **crossover**. `requiredCable(typeA, typeB)` is the one place this rule lives; the canvas, link popover, grading, custom scenario solver and the Learn page all call it.
 
 **In the UI**
 - Toolbar: choose the cable for new links (Straight or Crossover, or press **C**).
 - Canvas: crossover links are dashed with an **X**; a link with the wrong cable turns amber with a **!**.
-- Inspector: select a link to change its cable. It says whether the cable is right and why.
+- Link popover (double-click a link): change its cable. It says whether the cable is right and why.
 - Learn: a new **Cabling** page with the full device-by-device table.
 
 **Grading** (`checks.cabling`): every link uses the right cable. With no links it **fails** ("No links yet"), never passes vacuously.
