@@ -361,7 +361,7 @@ export default function ScenarioBuilder({ scenarioId = null }) {
 
           <Group
             title="Policy rules"
-            hint="Each rule becomes one requirement. Hubs work at Layer 1 and can’t hold policies, so rules apply to routers, PCs, servers and modems."
+            hint="Each rule becomes one requirement. Rules apply to each devices except the Hub."
             aside={<span className="sx-pill sx-tnum">{draft.rules.length} of {LIMITS.rules}</span>}
           >
             {draft.rules.length === 0 ? (

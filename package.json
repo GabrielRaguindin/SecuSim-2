@@ -9,7 +9,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test"
+    "test": "node --test",
+    "check": "node --test && next lint",
+    "simulate": "next build && next start"
   },
   "dependencies": {
     "jspdf": "^2.5.2",
