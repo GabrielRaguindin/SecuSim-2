@@ -26,7 +26,8 @@ Open it by **double-clicking** a device, **double-tapping** it on a touch screen
 - **Changes apply as you make them.** There is no Save button, and each change is one step in the undo history (Ctrl or ⌘ Z after closing, or the Undo button).
 - **A hub** opens with its name and the Layer 1 explanation only: it has no address and can't hold policies.
 - **In a timed scenario** the timer keeps running while the editor is open. If time runs out the editor closes and the result appears.
-- In the **Name** and **IP address** fields, **Enter** saves, and **Escape** puts the old value back. A second Escape, with nothing left to undo, closes the editor. A cancelled draft is never saved by the blur that follows.
+- **Every opening starts clean.** A field never carries text, or an error, over from the last device or the last time the editor was opened. A field also only saves, or complains, when you have actually changed it: clicking into the name and leaving it alone does nothing.
+- In the **Name** and **IP address** fields, **Enter** saves, and **Escape** puts the old value back. Leaving the field (clicking Done, or anywhere else) saves a valid change. A second Escape, with nothing left to undo, closes the editor. A cancelled draft is never saved by the blur that follows.
 
 ### Several devices at once
 
@@ -90,7 +91,7 @@ A hint goes away for good when you do the thing it describes or press **Got it**
 | Gestures and Enter | `components/workbench/NetworkCanvas.jsx` |
 | Wiring, hints, shortcuts | `components/workbench/Workbench.jsx`, `components/workbench/Toolbar.jsx` |
 | Removed | `components/workbench/Inspector.jsx` |
-| Tests | `tests/device-editor.test.js` (20 tests) |
+| Tests | `tests/device-editor.test.js` (20 tests). The editor itself is React, so its behaviour is covered by the browser checks (including the ones for fields leaking between devices) |
 
 ## Not changed, and coming next
 

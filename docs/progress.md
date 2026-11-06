@@ -21,7 +21,7 @@
 | 2.4.2 Hub as a strict broadcaster, broadcast storm detection | COMPLETED | Unit tests [V]; a three-hub loop built by hand in the browser, the storm and the fix [V] |
 | 2.4.3 Expanded security enforcement (filtering on the way, default-deny permissions) | COMPLETED | Unit tests with a 2000-network randomized check [V]; browser [V] |
 | 2.4.4 Ping mechanics (Answered, No reply, the reply) | COMPLETED | Unit tests with a 3000-network randomized check [V]; every outcome driven in the browser [V] |
-| 2.5.1 Device editor, link popover, action bar, hints, rename; sidebar cleared | COMPLETED | Unit tests [V]; 73 browser checks, including all three built-in scenarios completed through the new editor and a packet flow [V]; touch double-tap on an emulated phone [V] |
+| 2.5.1 Device editor, link popover, action bar, hints, rename; sidebar cleared | COMPLETED | Unit tests [V]; 78 browser checks, including all three built-in scenarios completed through the new editor and a packet flow [V]; touch double-tap on an emulated phone [V] |
 | Results page, PDF export | IN PROGRESS | List, expand and delete verified [V]. **PDF download not exercised** (jsPDF was stubbed in the harness); text sanitiser tested [V] |
 | Learn pages and packet demo | COMPLETED | Rendered and the packet animation ran [V] |
 | Design system, light and dark, phone layout | COMPLETED | Screenshots reviewed for every page [V] |

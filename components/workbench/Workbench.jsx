@@ -38,7 +38,8 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
   const [selection, setSelection] = useState(NO_SELECTION);
   const [linkFrom, setLinkFrom] = useState(null);
   const [newNodeId, setNewNodeId] = useState(null);
-  const [editor, setEditor] = useState(null); // { ids, open }: ids stay while the modal animates closed
+  const [editor, setEditor] = useState(null); // { ids, open, token }: ids stay while the modal animates closed
+  const editorToken = useRef(0);
   const [popoverEdge, setPopoverEdge] = useState(null);
   const [dismissed, setDismissed] = useState(null); // null until read from storage, so no hint flashes first
   const editorOpen = Boolean(editor?.open);
@@ -120,7 +121,8 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
     if (valid.length === 0) return;
     setPopoverEdge(null);
     setSelection({ nodes: valid, edge: null });
-    setEditor({ ids: valid, open: true });
+    editorToken.current += 1;
+    setEditor({ ids: valid, open: true, token: editorToken.current });
     dismiss('edit');
     if (valid.length > 1) dismiss('multi');
   };
@@ -341,6 +343,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
       <DeviceEditor
         open={editorOpen}
         ids={editor?.ids ?? []}
+        token={editor?.token ?? 0}
         doc={doc}
         dispatch={dispatch}
         disabled={disabled}

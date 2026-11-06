@@ -29,6 +29,10 @@ function NameField({ node, doc, dispatch, disabled }) {
       cancelled.current = false; // Escape put the old name back, so the blur that follows must not save the draft
       return true;
     }
+    if (cleanDeviceName(draft) === node.name && draft.trim() !== '') {
+      setError(null); // nothing was changed, so there is nothing to check or to save
+      return true;
+    }
     const problem = validateName(doc, node.id, draft);
     setError(problem);
     if (problem) return false;
@@ -51,6 +55,7 @@ function NameField({ node, doc, dispatch, disabled }) {
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(e) => setDraft(e.target.value)}
+        onFocus={() => { cancelled.current = false; }}
         onBlur={commit}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
@@ -90,6 +95,10 @@ function AddressRow({ node, doc, dispatch, disabled }) {
       cancelled.current = false; // Escape put the old address back, so the blur that follows must not save the draft
       return true;
     }
+    if (normalizeIp(draft) === node.ip) {
+      setError(null); // nothing was changed, so there is nothing to check or to save
+      return true;
+    }
     const problem = validateIp(doc, node.id, draft);
     setError(problem);
     if (!problem && normalizeIp(draft) !== node.ip) dispatch({ type: 'setIp', id: node.id, ip: draft });
@@ -120,6 +129,7 @@ function AddressRow({ node, doc, dispatch, disabled }) {
           aria-invalid={error ? 'true' : undefined}
           aria-describedby={error ? errorId : undefined}
           onChange={(e) => setDraft(e.target.value)}
+          onFocus={() => { cancelled.current = false; }}
           onBlur={commit}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -215,8 +225,10 @@ function PolicyAccordion({ doc, ids, dispatch, disabled }) {
  * Everything about one device, or the policies of several, in one place:
  * a name, an address and four collapsible categories of policies.
  * Every change is applied as you make it and is one step in the undo history.
+ * `token` changes each time the editor is opened, so a field never carries text, or an error, over from
+ * the last device or the last time: every opening starts clean.
  */
-export default function DeviceEditor({ open, ids, doc, dispatch, disabled, onClose, onRemove }) {
+export default function DeviceEditor({ open, ids, token = 0, doc, dispatch, disabled, onClose, onRemove }) {
   const nodes = ids.map((id) => doc.nodes.find((n) => n.id === id)).filter(Boolean);
   const single = nodes.length === 1 ? nodes[0] : null;
   const holders = holderIds(doc, ids);
@@ -226,7 +238,7 @@ export default function DeviceEditor({ open, ids, doc, dispatch, disabled, onClo
     <div className="sx-editor__head">
       <span className="sx-editor__tile" data-type={single.type}><DeviceGlyph type={single.type} size={26} /></span>
       <div className="sx-editor__who">
-        <NameField node={single} doc={doc} dispatch={dispatch} disabled={disabled} />
+        <NameField key={`name:${token}:${single.id}`} node={single} doc={doc} dispatch={dispatch} disabled={disabled} />
         <p className="sx-caption">{DEVICE_TYPES[single.type].blurb}</p>
       </div>
     </div>
@@ -243,8 +255,8 @@ export default function DeviceEditor({ open, ids, doc, dispatch, disabled, onClo
   return (
     <Sheet open={open && nodes.length > 0} onClose={onClose} title={title} header={header}>
       <div className="sx-editor">
-        {single && canHaveIp(single.type) && <AddressRow node={single} doc={doc} dispatch={dispatch} disabled={disabled} />}
-        {holders.length > 0 ? <PolicyAccordion key={ids.join(',')} doc={doc} ids={ids} dispatch={dispatch} disabled={disabled} /> : <Layer1Note />}
+        {single && canHaveIp(single.type) && <AddressRow key={`address:${token}:${single.id}`} node={single} doc={doc} dispatch={dispatch} disabled={disabled} />}
+        {holders.length > 0 ? <PolicyAccordion key={`policies:${token}:${ids.join(',')}`} doc={doc} ids={ids} dispatch={dispatch} disabled={disabled} /> : <Layer1Note />}
       </div>
       <div className="sx-sheet__actions sx-editor__actions">
         <button type="button" className="sx-btn sx-btn--danger" disabled={disabled} onClick={() => onRemove(ids)}>
