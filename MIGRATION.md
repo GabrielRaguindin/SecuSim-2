@@ -47,22 +47,9 @@ Dependencies removed: `flowbite-react`, `vis-network`, `vis-data`, `react-icons`
 | B-24 | Mixed coordinate systems on drop | Fixed. Single coordinate system |
 | B-25 | Hamburger did nothing on scenario pages | Fixed. Navigation is always present |
 
-## Decisions that need your sign-off
+## Verification status, and next steps
 
-2.0 changed a few requirements because the 1.x text and the 1.x checks disagreed. Please confirm each.
-
-1. **Scenario 1: "each PC is connected to at least one router".** This could not be done in a ring (each router has only two neighbours), and 1.x never checked it. **Resolved:** Scenario 1 is now a ring of **8 PCs with no routers**. Only the device counts and the ring change. The policy rules are exactly as the original brief had them: five PCs share files, those five block untrusted IPs, and every device allows web traffic.
-2. **Scenario 1: Block untrusted IP.** 1.x required it on every device; the text says "for the file-sharing PCs". 2.0 requires it on the five file-sharing PCs only.
-3. **Scenario 2: Allow web traffic.** **Resolved, and superseded by item 8.** The original "every device" rule included the hubs, which can't hold a policy, so the hubs were replaced by a streaming server and a modem. Scenario 2 now asks for Allow web traffic on **the router, the server and all 6 PCs**, and replaces "Restrict outbound traffic for every device" with **Block untrusted IP on the router only**. The star is strict: the router links to all other devices and nothing else is linked.
-4. **Scenario 3: Remote desktop.** **Resolved, and superseded by item 8.** The old rule (the router and both hubs only) asked a hub to hold a policy, and a full mesh of hubs would loop. Scenario 3 now has a VoIP server and a modem instead of the hubs, and asks for **SSH access on the router and the server only**, which is how network equipment is administered.
-5. **IP addresses** reject leading zeros ("01.2.3.4"). 1.x allowed them.
-6. **Results are per browser.** There is no account or server. If you want results shared across devices, that needs a backend and a decision about identity.
-7. **Policy names** have corrected capitalisation and spelling ("VoIP", "end-to-end").
-8. **Hubs are Layer 1 devices.** A hub repeats signals and reads nothing, so it is the one device type that can't be given an IP address or a security policy. This is enforced in the data model, grading, custom scenarios, packets and the UI, and old saves are cleaned when they load. Scenarios 2 and 3 no longer place hubs: they use a server and a modem, with policy requirements that name exactly who they apply to. Full definitions, the reasoning and the behavior changes are in `docs/layer1-hubs.md`. One consequence: results you saved for Scenarios 2 and 3 are for the older exercises, but still count toward the "Done in…" badge.
-
-## Not verified, and next steps
-
-- `npm install`, `next build` and `next lint` were **not run** (the build environment had no network). The code was compiled and run in a real browser through an esbuild harness with the Next modules stubbed, using React 19 where the project pins React 18. Run `npm run build` first and fix anything it reports.
+- `npm run lint` and `npm run build` pass in the owner's checkout (after Patch 2.5.1): ESLint reported no warnings or errors, and the production build compiled and generated all 19 pages. This was run by the project owner, not in the environment where the code was written.
 - Safari and Firefox were not tested; only Chromium. The things most worth a look there are the spring curves, `backdrop-filter`, and touch dragging.
 - No screen-reader pass yet. Semantics are in place (labelled controls, switch roles, live regions, keyboard operation of the canvas) but have not been heard.
 - Not built, and would suit 2.1: marquee selection, drag-to-dismiss on sheets, pan and zoom for large networks, a lesson for each policy with a demo, and Playwright tests inside the repo.
