@@ -2,7 +2,7 @@
 
 > **Generated:** from the working tree after Patch 2.5.1 (114 files, about 8151 lines of source and styles, about 2837 lines of tests).
 > **Evidence tags:** **[V]** verified by running it · **[R]** verified by reading the code · **[U]** unverified.
-> Not written to GitHub. No repository connection was available, so this is a deliverable to commit.
+> Not written to GitHub by the assistant (it has no repository connection). Each patch is applied to the repository by the project owner.
 
 ## Stack [R]
 

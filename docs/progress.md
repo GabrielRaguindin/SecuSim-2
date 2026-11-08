@@ -1,7 +1,7 @@
 # SecuSim 2.0: Progress
 
 > **Evidence tags:** **[V]** verified by running it · **[R]** verified by reading the code · **[U]** unverified.
-> Not written to GitHub. No repository connection was available, so this is a deliverable to commit.
+> Not written to GitHub by the assistant (it has no repository connection). Each patch is applied to the repository by the project owner.
 
 ## What exists
 
@@ -27,13 +27,16 @@
 | Design system, light and dark, phone layout | COMPLETED | Screenshots reviewed for every page [V] |
 | Accessibility basics (roles, labels, keyboard, reduced motion) | IN PROGRESS | Keyboard operation and reduced motion tested [V]. **No screen-reader pass** [U] |
 
+## Verified by the project owner
+
+`npm run lint` reported no ESLint warnings or errors, and `npm run build` compiled, type-checked and generated all 19 pages (Next.js 14.2.5), run on the owner's checkout after Patch 2.5.1 [V, reported by the owner]. The patches have been applied to the GitHub repository.
+
 ## Not verified
 
-1. **`npm install`, `next build`, `next lint`**: not run (no network where this was built) [U]. The code was compiled with esbuild with the Next modules stubbed, and ran under React 19 although the project pins React 18. Expect to fix small things on first build, most likely lint warnings about hook dependencies.
-2. **Browsers other than Chromium** [U]: Safari and Firefox untested. Check the spring curves, `backdrop-filter` and touch dragging.
-3. **Real touch hardware** [U]: touch was emulated.
-4. **PDF output** [U], as above.
-5. **Server rendering and hydration** [U]: geometry is rounded to avoid mismatches, but it has not been seen in a real Next server render.
+1. **Browsers other than Chromium** [U]: Safari and Firefox untested. Check the spring curves, `backdrop-filter` and touch dragging.
+2. **Real touch hardware** [U]: touch was emulated.
+3. **PDF output** [U], as above.
+4. **Hydration in a real browser** [U]: geometry is rounded to avoid mismatches. The production build prerendered every page without errors, which covers server rendering.
 
 ## Patch 2.5.1 is delivered
 
@@ -43,16 +46,14 @@ Configuration moved out of the sidebar into a device editor and a link popover (
 
 Switch, strict hub broadcasting with storm detection, expanded security enforcement and the ping reply are all in. See `docs/switch.md`, `docs/hub-broadcast.md`, `docs/transit-filtering.md` and `docs/ping-reply.md`, and `docs/recommendation.md` for the numbering (the original 2.4.3 was dropped and the original 2.4.5 became 2.4.3). The outline for Patch 2.5 is still to come.
 
-## Decisions waiting for you
+## Decisions
 
-See `MIGRATION.md`, section "Decisions that need your sign-off". The impossible Scenario 1 requirement ("each PC connected to a router") is resolved: Scenario 1 is now a ring of 8 PCs with no routers.
+None waiting. The 2.0 sign-off decisions were confirmed by the project owner and removed from `MIGRATION.md`. The changes behind them are recorded where they live: Scenario 1 in `docs/recommendation.md` (2.3.1), hubs in `docs/layer1-hubs.md`, and the revised Scenarios 2 and 3 in `docs/layer1-hubs.md`.
 
 ## Next actions
 
 | Priority | Action |
 |---|---|
-| P0 | Run `npm install`, `npm run build`, `npm run lint`, and fix what they report |
-| P0 | Commit the 2.0 foundation and the patches on top of it as branches or commits; confirm the sign-off decisions |
 | P1 | Add Playwright tests to the repo that run against `next dev` (the flows in this file marked [V] are the script) |
 | P1 | Test on Safari, Firefox and a real phone; download a PDF and open it |
 | P1 | Screen-reader pass on the canvas, the device editor, the link popover and sheets |
@@ -61,4 +62,4 @@ See `MIGRATION.md`, section "Decisions that need your sign-off". The impossible 
 
 ## Recommended next step
 
-Run the build in a real checkout. It is the one verification this environment could not do, and everything else is ready to be judged against it.
+Finish Patch 2.5 (2.5.2 toolbar labels, 2.5.3 polish and verification), and have testers try the new editor. Their feedback decides whether one-click fixes or reachability requirements come next.
