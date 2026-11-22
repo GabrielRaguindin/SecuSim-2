@@ -7,7 +7,7 @@
 
 | Area | Status | Evidence |
 |---|---|---|
-| Network model, history, validation | COMPLETED | Unit tests [V] (197 across the project) |
+| Network model, history, validation | COMPLETED | Unit tests [V] (238 across the project) |
 | Scenario grading (3 scenarios, reference solutions, a regression per 1.x bug) | COMPLETED | Unit tests [V] |
 | Storage (results, topologies) | COMPLETED | Unit tests with a fake store [V]; real `localStorage` exercised in a browser [V] |
 | Workbench: dock, canvas, link tool, device editor, link popover, undo, shortcuts | COMPLETED | Driven end to end in headless Chromium [V] |
@@ -22,6 +22,7 @@
 | 2.4.3 Expanded security enforcement (filtering on the way, default-deny permissions) | COMPLETED | Unit tests with a 2000-network randomized check [V]; browser [V] |
 | 2.4.4 Ping mechanics (Answered, No reply, the reply) | COMPLETED | Unit tests with a 3000-network randomized check [V]; every outcome driven in the browser [V] |
 | 2.5.1 Device editor, link popover, action bar, hints, rename; sidebar cleared | COMPLETED | Unit tests [V]; 78 browser checks, including all three built-in scenarios completed through the new editor and a packet flow [V]; touch double-tap on an emulated phone [V] |
+| 2.5.2 Pan and zoom, fit, a hideable side panel, compact clock in timed scenarios | COMPLETED | Unit tests [V]; 66 browser checks against the real built app, including all three scenarios built on the new canvas and a real two-finger pinch [V]; lint and production build clean [V] |
 | Results page, PDF export | IN PROGRESS | List, expand and delete verified [V]. **PDF download not exercised** (jsPDF was stubbed in the harness); text sanitiser tested [V] |
 | Learn pages and packet demo | COMPLETED | Rendered and the packet animation ran [V] |
 | Design system, light and dark, phone layout | COMPLETED | Screenshots reviewed for every page [V] |
@@ -38,9 +39,13 @@
 3. **PDF output** [U], as above.
 4. **Hydration in a real browser** [U]: geometry is rounded to avoid mismatches. The production build prerendered every page without errors, which covers server rendering.
 
+## Patch 2.5.2 is delivered
+
+The canvas can be panned and zoomed and the side panel hidden (see `docs/canvas-view.md`). Patch 2.5 continues with 2.5.3 (toolbar labels, and a pass over the simulator, the phone layout and keyboard use); one-click fixes in the packet result are agreed for a later patch. **From this patch on, ESLint and the production build are also run in the development environment, and the app is tested in a real browser against the built Next.js app. Touch (a pinch and a one-finger pan) was driven in Chromium with real touch events, not tried on a real phone [U].**
+
 ## Patch 2.5.1 is delivered
 
-Configuration moved out of the sidebar into a device editor and a link popover (see `docs/device-editor.md`). Patch 2.5 continues with 2.5.2 (toolbar labels) and 2.5.3 (polish and verification); one-click fixes in the packet result are agreed for a later patch. **Touch was emulated, not tried on a real phone [U].**
+Configuration moved out of the sidebar into a device editor and a link popover (see `docs/device-editor.md`). Patch 2.5 continued with 2.5.2 (pan, zoom and a hideable side panel, below) and goes on with 2.5.3 (toolbar labels and polish); one-click fixes in the packet result are agreed for a later patch.
 
 ## Patch 2.4 is complete
 
@@ -62,4 +67,4 @@ None waiting. The 2.0 sign-off decisions were confirmed by the project owner and
 
 ## Recommended next step
 
-Finish Patch 2.5 (2.5.2 toolbar labels, 2.5.3 polish and verification), and have testers try the new editor. Their feedback decides whether one-click fixes or reachability requirements come next.
+Finish Patch 2.5 (2.5.3: toolbar labels, then the simulator, phone layout and keyboard pass), and have testers try the new editor and canvas. Their feedback decides whether one-click fixes or reachability requirements come next.

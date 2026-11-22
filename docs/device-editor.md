@@ -9,7 +9,7 @@ The sidebar used to hold everything: the selected device's details, an IP field,
 | Sandbox | **Send a packet** and **Address plan** |
 | Simulator | The **Session** panel (timer, requirements, Check my work) and **Address plan** |
 
-Nothing in the sidebar is edited. It is also narrower (330px, from 360px), and the packet panel's From and To menus now stack, so a device's name and address are never cut off.
+Nothing in the sidebar is edited. It is also narrower (330px, from 360px), it can be hidden altogether (see `docs/canvas-view.md`), and the packet panel's From and To menus now stack, so a device's name and address are never cut off.
 
 ## The device editor
 
@@ -66,7 +66,8 @@ The old sidebar's tips are gone, so the canvas now teaches, one hint at a time:
 1. After the first device: *double-click or double-tap a device to name it, give it an address and set its policies.*
 2. With two devices and no link: *choose the Link tool (L), then drag from one device to another.*
 3. Once there is a link: *double-click a link to see its cable, change it, or remove it.*
-4. With three or more devices: *Shift-click several devices, or use Select all, then press Edit to set a policy on all of them at once.*
+4. With four or more devices: *drag the background to move around, scroll or pinch to zoom, and press Fit to see everything.*
+5. With three or more devices: *Shift-click several devices, or use Select all, then press Edit to set a policy on all of them at once.*
 
 A hint goes away for good when you do the thing it describes or press **Got it**, and it is remembered in this browser (`secusim:v2:hints`).
 
@@ -95,4 +96,4 @@ A hint goes away for good when you do the thing it describes or press **Got it**
 
 ## Not changed, and coming next
 
-The sidebar's tips are replaced here, but a few things from the plan are still to come in 2.5.2 and 2.5.3: one-click fixes in the packet result (decided to wait), labels on the toolbar icons, a pass over the simulator, phone layout and keyboard use, and an optional collapsible sidebar.
+The sidebar's tips are replaced here. Pan, zoom and the collapsible sidebar arrived in 2.5.2 (`docs/canvas-view.md`). Still to come: labels on the toolbar icons and a pass over the simulator, phone layout and keyboard use (2.5.3), and one-click fixes in the packet result (decided to wait).

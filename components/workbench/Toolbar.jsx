@@ -64,7 +64,7 @@ function AutoIpMenu({ onPick, disabled }) {
   );
 }
 
-export default function Toolbar({ tool, setTool, cable, setCable, canUndo, canRedo, onUndo, onRedo, onDelete, canDelete, onAutoIps, onClear, onSelectAll, hasNodes, disabled, extra }) {
+export default function Toolbar({ tool, setTool, cable, setCable, canUndo, canRedo, onUndo, onRedo, onDelete, canDelete, onAutoIps, onClear, onSelectAll, hasNodes, disabled, extra, sidebarCollapsed, onToggleSidebar }) {
   return (
     <div className="sx-toolbar">
       <div className="sx-glass sx-toolbar__group" role="toolbar" aria-label="Tools">
@@ -103,6 +103,17 @@ export default function Toolbar({ tool, setTool, cable, setCable, canUndo, canRe
           <Icon name="reset" />
         </button>
         {extra}
+        <span className="sx-toolbar__divider" aria-hidden="true" />
+        <button
+          type="button"
+          className="sx-iconbtn"
+          onClick={onToggleSidebar}
+          aria-label={sidebarCollapsed ? 'Show the side panel' : 'Hide the side panel'}
+          aria-pressed={sidebarCollapsed}
+          title={sidebarCollapsed ? 'Show the side panel (P)' : 'Hide the side panel for more room (P)'}
+        >
+          <Icon name="panelRight" />
+        </button>
       </div>
     </div>
   );

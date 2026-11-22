@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GlyphPaths } from '@/components/ui/DeviceGlyph';
-import { NODE_SIZE, clampToBounds, edgeId } from '@/lib/network.js';
+import { NODE_SIZE, edgeId } from '@/lib/network.js';
+import { clampToWorld, clampZoom, limitView, panBy, toWorld, zoomAt } from '@/lib/view.js';
 import { isSettled, projectRelease, stepSpring, velocityFromSamples } from '@/lib/spring.js';
 import { DEVICE_ORDER, canHaveIp } from '@/lib/devices.js';
 import { canConnect } from '@/lib/networkReducer.js';
@@ -29,7 +30,7 @@ const DOUBLE_PX = 14;
  *    A double-tap is found here from the pointer events, because the browser's own dblclick is unreliable
  *    on a surface that has touch gestures switched off.
  */
-export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool, size, disabled, newNodeId, onLinkRejected, linkFrom, setLinkFrom, cable, trace, onEditNodes, onEditLink }) {
+export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool, size, disabled, newNodeId, onLinkRejected, linkFrom, setLinkFrom, cable, trace, view, onView, onEditNodes, onEditLink }) {
   const svgRef = useRef(null);
   const drag = useRef(null);
   const anim = useRef(null);
@@ -41,11 +42,18 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
   docRef.current = doc;
   selRef.current = selection;
   sizeRef.current = size;
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const onViewRef = useRef(onView);
+  onViewRef.current = onView;
+  const disabledRef = useRef(disabled);
+  disabledRef.current = disabled;
 
   const reduced = usePrefersReducedMotion();
   const lastTap = useRef(null);
   const [cursor, setCursor] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
+  const [panning, setPanning] = useState(false);
 
   /** Records a tap, and says whether it completes a double-tap on the same thing. */
   const isDoubleTap = (kind, id, p) => {
@@ -101,10 +109,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
     for (const id of ids) {
       const n = docRef.current.nodes.find((m) => m.id === id);
       if (!n) continue;
-      const target = clampToBounds(
-        { x: projectRelease(n.x, vx, 0.985), y: projectRelease(n.y, vy, 0.985) },
-        sizeRef.current
-      );
+      const target = clampToWorld({ x: projectRelease(n.x, vx, 0.985), y: projectRelease(n.y, vy, 0.985) });
       items.push({ id, sx: { x: n.x, v: vx }, sy: { x: n.y, v: vy }, tx: target.x, ty: target.y });
     }
     if (items.every((it) => Math.hypot(it.tx - it.sx.x, it.ty - it.sy.x) < 1.5)) return;
@@ -144,7 +149,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
         return;
       }
       setLinkFrom(node.id);
-      setCursor(p);
+      setCursor(toWorld(viewRef.current, p));
       drag.current = { mode: 'link', id: node.id, start: p, moved: false, pointerId: e.pointerId };
       e.currentTarget.setPointerCapture(e.pointerId);
       return;
@@ -188,7 +193,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
     const p = toLocal(e);
 
     if (d.mode === 'link') {
-      setCursor(p);
+      setCursor(toWorld(viewRef.current, p));
       if (Math.hypot(p.x - d.start.x, p.y - d.start.y) > 8) d.moved = true;
       return;
     }
@@ -207,7 +212,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
     const positions = {};
     for (const id of d.ids) {
       const o = d.origins[id];
-      if (o) positions[id] = clampToBounds({ x: o.x + dx, y: o.y + dy }, sizeRef.current);
+      if (o) positions[id] = clampToWorld({ x: o.x + dx / viewRef.current.k, y: o.y + dy / viewRef.current.k });
     }
     dispatch({ type: 'preview', positions });
   };
@@ -226,7 +231,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
 
     if (d.mode === 'link') {
       if (d.moved) {
-        const target = hitTest(p, d.id);
+        const target = hitTest(toWorld(viewRef.current, p), d.id);
         if (target) tryConnect(d.id, target);
         setLinkFrom(null);
         setCursor(null);
@@ -240,7 +245,10 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
       return;
     }
     lastTap.current = null;
-    if (!reduced) startMomentum(d.ids, velocityFromSamples(d.samples));
+    if (!reduced) {
+      const v = velocityFromSamples(d.samples);
+      startMomentum(d.ids, { x: v.x / viewRef.current.k, y: v.y / viewRef.current.k }); // a throw is in world units
+    }
   };
 
   const onNodePointerCancel = () => {
@@ -285,7 +293,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
     const positions = {};
     for (const id of ids) {
       const n = docRef.current.nodes.find((m) => m.id === id);
-      if (n) positions[id] = clampToBounds({ x: n.x + delta[0], y: n.y + delta[1] }, sizeRef.current);
+      if (n) positions[id] = clampToWorld({ x: n.x + delta[0], y: n.y + delta[1] });
     }
     dispatch({ type: 'checkpoint' });
     dispatch({ type: 'preview', positions });
@@ -293,16 +301,99 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
 
   /* ---------- Background and links ---------- */
 
+  /* ---------- Moving around: drag the background to pan, scroll or pinch to zoom ---------- */
+
+  const pointers = useRef(new Map()); // pointerId -> where it is on the stage, for the mouse and fingers on the background
+  const gesture = useRef(null); // { mode: 'pan' | 'pinch', ... }
+
+  const changeView = (next) => onViewRef.current?.(limitView(next, sizeRef.current));
+
+  /** (Re)starts the gesture from the pointers that are down now: two make a pinch, one makes a pan. */
+  const startGesture = (carry = {}) => {
+    const pts = [...pointers.current.values()];
+    const startView = { ...viewRef.current };
+    if (pts.length >= 2) {
+      const [a, b] = pts;
+      gesture.current = { mode: 'pinch', startView, startDist: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), startCenter: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, moved: true, additive: false };
+    } else if (pts.length === 1) {
+      gesture.current = { mode: 'pan', startView, start: pts[0], moved: Boolean(carry.moved), additive: Boolean(carry.additive) };
+    } else {
+      gesture.current = null;
+    }
+  };
+
   const onBackgroundPointerDown = (e) => {
-    if (disabled) return;
-    if (!(e.shiftKey || e.metaKey || e.ctrlKey)) onSelect({ nodes: [], edge: null });
-    setLinkFrom(null);
-    setCursor(null);
+    if (disabled || drag.current) return;
+    cancelMomentum();
+    pointers.current.set(e.pointerId, toLocal(e));
+    try {
+      svgRef.current.setPointerCapture(e.pointerId);
+    } catch {
+      /* the pointer is already gone */
+    }
+    startGesture({ additive: e.shiftKey || e.metaKey || e.ctrlKey, moved: pointers.current.size > 1 });
   };
 
   const onSvgPointerMove = (e) => {
-    if (linkFrom && tool === 'link' && !drag.current) setCursor(toLocal(e));
+    if (pointers.current.has(e.pointerId)) {
+      const p = toLocal(e);
+      pointers.current.set(e.pointerId, p);
+      const g = gesture.current;
+      if (g?.mode === 'pan') {
+        const dx = p.x - g.start.x;
+        const dy = p.y - g.start.y;
+        if (!g.moved && Math.hypot(dx, dy) < 4) return; // still just a click
+        if (!g.moved) {
+          g.moved = true;
+          setPanning(true);
+        }
+        changeView(panBy(g.startView, dx, dy));
+      } else if (g?.mode === 'pinch') {
+        const [a, b] = [...pointers.current.values()];
+        const center = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        const k = clampZoom((g.startView.k * Math.max(1, Math.hypot(a.x - b.x, a.y - b.y))) / g.startDist);
+        const anchor = toWorld(g.startView, g.startCenter); // the point you pinched stays between your fingers
+        changeView({ x: center.x - anchor.x * k, y: center.y - anchor.y * k, k });
+      }
+      return;
+    }
+    if (linkFrom && tool === 'link' && !drag.current) setCursor(toWorld(viewRef.current, toLocal(e)));
   };
+
+  const onBackgroundPointerEnd = (e, cancelled) => {
+    if (!pointers.current.has(e.pointerId)) return;
+    pointers.current.delete(e.pointerId);
+    try {
+      svgRef.current.releasePointerCapture(e.pointerId);
+    } catch {
+      /* already released */
+    }
+    const g = gesture.current;
+    if (g?.mode === 'pan' && !g.moved && !cancelled) {
+      // A click on the empty canvas lets go of the selection, and of a link that was being drawn.
+      if (!g.additive) onSelect({ nodes: [], edge: null });
+      setLinkFrom(null);
+      setCursor(null);
+    }
+    setPanning(false);
+    startGesture({ moved: true }); // a finger left after a pinch carries on as a pan, with no click at the end
+  };
+
+  /* The wheel zooms around the pointer. It needs a listener that is allowed to stop the page from scrolling. */
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return undefined;
+    const onWheel = (e) => {
+      if (disabledRef.current) return;
+      e.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const factor = Math.min(1.25, Math.max(0.8, Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0015))));
+      const next = zoomAt(viewRef.current, factor, { x: e.clientX - rect.left, y: e.clientY - rect.top });
+      if (next !== viewRef.current) onViewRef.current?.(limitView(next, sizeRef.current));
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, []);
 
   const source = linkFrom ? doc.nodes.find((n) => n.id === linkFrom) : null;
   const nodeById = new Map(doc.nodes.map((n) => [n.id, n]));
@@ -344,12 +435,15 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
       ref={svgRef}
       className="sx-canvas"
       data-tool={tool}
+      data-panning={panning}
       width={size.width}
       height={size.height}
       role="group"
       aria-label="Network canvas"
       onPointerDown={onBackgroundPointerDown}
       onPointerMove={onSvgPointerMove}
+      onPointerUp={(e) => onBackgroundPointerEnd(e, false)}
+      onPointerCancel={(e) => onBackgroundPointerEnd(e, true)}
     >
       <defs>
         {DEVICE_ORDER.map((type) => (
@@ -359,6 +453,8 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
           </linearGradient>
         ))}
       </defs>
+
+      <g className="sx-viewport" transform={`translate(${view.x} ${view.y}) scale(${view.k})`}>
 
       <g>
         {doc.edges.map((edge) => {
@@ -373,6 +469,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
             <g key={edge.id}>
               <line
                 className="sx-edge"
+                vectorEffect="non-scaling-stroke"
                 data-selected={selected}
                 data-cable={edge.cable}
                 data-wrong={wrong}
@@ -390,6 +487,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
               )}
               <line
                 className="sx-edge-hit"
+                vectorEffect="non-scaling-stroke"
                 x1={a.x}
                 y1={a.y}
                 x2={b.x}
@@ -407,7 +505,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
           );
         })}
         {source && cursor && (
-          <line className="sx-edge sx-edge--ghost" x1={source.x} y1={source.y} x2={cursor.x} y2={cursor.y} />
+          <line className="sx-edge sx-edge--ghost" vectorEffect="non-scaling-stroke" x1={source.x} y1={source.y} x2={cursor.x} y2={cursor.y} />
         )}
       </g>
 
@@ -477,6 +575,7 @@ export default function NetworkCanvas({ doc, dispatch, selection, onSelect, tool
           )}
         </g>
       )}
+      </g>
     </svg>
   );
 }

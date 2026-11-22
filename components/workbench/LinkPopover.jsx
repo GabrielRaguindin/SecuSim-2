@@ -5,13 +5,14 @@ import Icon from '@/components/ui/Icon';
 import Segmented from '@/components/ui/Segmented';
 import { CABLES, CABLE_IDS, cableLabel, explainCable, requiredCable } from '@/lib/cabling.js';
 import { popoverPlacement } from '@/lib/overlays.js';
+import { toScreen } from '@/lib/view.js';
 
 /**
  * What you see when you double-click a link: who it joins, the cable, whether it is the right one,
  * and the option to remove it. It hangs from the middle of the link, and closes on Escape, on a click
  * anywhere else, or when the link goes away.
  */
-export default function LinkPopover({ doc, edgeId, size, disabled, dispatch, onClose, onRemove }) {
+export default function LinkPopover({ doc, edgeId, size, view, disabled, dispatch, onClose, onRemove }) {
   const ref = useRef(null);
   const edge = doc.edges.find((e) => e.id === edgeId) ?? null;
   const a = edge ? doc.nodes.find((n) => n.id === edge.a) : null;
@@ -45,7 +46,7 @@ export default function LinkPopover({ doc, edgeId, size, disabled, dispatch, onC
   const need = requiredCable(a.type, b.type);
   const have = edge.cable ?? 'straight';
   const wrong = have !== need;
-  const place = popoverPlacement({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, size);
+  const place = popoverPlacement(toScreen(view, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }), size);
 
   return (
     <div

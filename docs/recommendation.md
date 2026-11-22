@@ -72,15 +72,19 @@ Delivered in smaller patches, like 2.4.
 * **Multi-select editing and Select all:** several selected devices open one editor for all their policies, which makes default-deny quick to set up.
 * **First-use hints** on the canvas replace the sidebar's tips, one at a time, and are remembered.
 
-**2.5.2: Make what's left fast. (Planned)**
-* Labels on the toolbar icons, which are cryptic and have no hover on touch.
+**2.5.2: Free movement and more room. (Implemented)**
+* **Pan and zoom the canvas:** drag the background to move around, scroll or pinch to zoom (25% to 250%), zoom buttons with the current level, **Fit** to see every device, and keys (+, -, 0, 1, arrows). Everything works at any zoom, and new devices appear where you are looking.
+* **Collapsible side panel:** a button (or P) hides it for a full-width canvas. The choice is remembered. In a timed scenario the clock and the Check button move onto the canvas while the panel is hidden.
+* *(This replaces the old "Enhanced Canvas" item, which is no longer listed under Upcoming patches.)*
 
-**2.5.3: Polish and verify. (Planned)**
-* A pass over the simulator, the phone layout and keyboard use, and an optional collapsible sidebar.
+**2.5.3: Make what's left fast, polish and verify. (Planned)**
+* Labels on the toolbar icons, which are cryptic and have no hover on touch.
+* A pass over the simulator, the phone layout (the top-left toolbar is wider than a phone screen, so Undo and Redo are cut off) and keyboard use.
 
 **Later (agreed to wait so the patches stay small):**
 * **One-click fixes** in the packet result: the "To fix it" line becomes a button the learner chooses to press (turn on a policy, change a cable).
 * Changing how links are created (the Link tool and choosing a cable beforehand), which is also confusing but would make 2.5.1 too large to test well.
+* **Box-select:** drag a rectangle round several devices. (The background drag now pans, so it needs its own gesture, for example Shift and drag.)
 
 ---
 
@@ -90,9 +94,6 @@ Delivered in smaller patches, like 2.4.
 
 ## Enhanced Results Modal:
 * The results modal will not only display the list of completed conditions during the simulation but also the snapshot of the user's network design.
-
-## Enhanced Canvas:
-* A Pan-to-Zoom feature for the canvas if the user wishes to create large network models.
 
 ---
 

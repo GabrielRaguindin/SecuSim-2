@@ -200,9 +200,26 @@ export default function Simulator({ scenario }) {
     </section>
   );
 
+  /* With the side panel hidden, the clock and the Check button stay on the canvas. */
+  const mini = (
+    <div className="sx-glass sx-minisession" role="group" aria-label="Session">
+      <span className="sx-minisession__time sx-tnum" role="timer" aria-label={`Time left: ${formatClock(remaining)}`}>
+        <Icon name="clock" size={16} /> {formatClock(remaining)}
+      </span>
+      {phase === 'running' && (
+        <button type="button" className="sx-btn sx-btn--sm sx-btn--primary" onClick={runCheck}>
+          <Icon name="check" size={16} strokeWidth={2.4} /> Check my work
+        </button>
+      )}
+      {phase === 'finished' && (
+        <button type="button" className="sx-btn sx-btn--sm sx-btn--tint" onClick={() => setOutcomeOpen(true)}>View result</button>
+      )}
+    </div>
+  );
+
   return (
     <>
-      <Workbench net={net} toast={toast} palette={DEVICE_ORDER} disabled={phase !== 'running'} sidebarTop={session} />
+      <Workbench net={net} toast={toast} palette={DEVICE_ORDER} disabled={phase !== 'running'} sidebarTop={session} collapsedExtra={mini} />
 
       <Brief
         open={phase === 'brief' || briefView}
