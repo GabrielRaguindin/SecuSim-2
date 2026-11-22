@@ -7,13 +7,15 @@ import Toolbar from './Toolbar';
 import DeviceEditor from './DeviceEditor';
 import LinkPopover from './LinkPopover';
 import ActionBar from './ActionBar';
+import ZoomControls from './ZoomControls';
 import AddressPlan from './AddressPlan';
 import Icon from '@/components/ui/Icon';
 import { ToastRegion } from '@/components/ui/Toast';
-import { clampToBounds, fitToBounds, nextFreeSpot } from '@/lib/network.js';
+import { nextFreeSpotIn } from '@/lib/network.js';
+import { IDENTITY_VIEW, ZOOM_STEP, clampToWorld, fitView, limitView, panBy, toWorld, usableWorldRect, zoomAt, zoomTo } from '@/lib/view.js';
 import { normalizeDoc } from '@/lib/networkReducer.js';
 import { nextHint } from '@/lib/hints.js';
-import { dismissHint, loadDismissedHints } from '@/lib/storage.js';
+import { dismissHint, loadDismissedHints, loadUiPrefs, saveUiPrefs } from '@/lib/storage.js';
 import { pluralize } from '@/lib/format.js';
 
 const NO_SELECTION = { nodes: [], edge: null };
@@ -29,7 +31,7 @@ const NO_SELECTION = { nodes: [], edge: null };
  * A parent can pass `controllerRef` to get `{ loadDoc }` for opening saved networks,
  * and `trace` to show a packet travelling across the canvas.
  */
-export default function Workbench({ net, toast, disabled = false, palette, toolbarExtra, sidebarTop, controllerRef, trace = null }) {
+export default function Workbench({ net, toast, disabled = false, palette, toolbarExtra, sidebarTop, collapsedExtra = null, controllerRef, trace = null }) {
   const { doc, dispatch, canUndo, canRedo } = net;
   const stageRef = useRef(null);
   const [size, setSize] = useState({ width: 900, height: 620 });
@@ -40,6 +42,8 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
   const [newNodeId, setNewNodeId] = useState(null);
   const [editor, setEditor] = useState(null); // { ids, open, token }: ids stay while the modal animates closed
   const editorToken = useRef(0);
+  const [view, setView] = useState(IDENTITY_VIEW); // which part of the world is on screen, and how big
+  const [collapsed, setCollapsed] = useState(false); // is the side panel hidden?
   const [popoverEdge, setPopoverEdge] = useState(null);
   const [dismissed, setDismissed] = useState(null); // null until read from storage, so no hint flashes first
   const editorOpen = Boolean(editor?.open);
@@ -58,7 +62,10 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => setDismissed(loadDismissedHints()), []);
+  useEffect(() => {
+    setDismissed(loadDismissedHints());
+    setCollapsed(loadUiPrefs().sidebarCollapsed);
+  }, []);
 
   const dismiss = useCallback((id) => {
     dismissHint(id);
@@ -135,18 +142,20 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
     dismiss('cable');
   };
 
-  const addDevice = (type, x, y) => {
-    const p = clampToBounds({ x, y }, size);
+  /** Adds a device at a place in the world. */
+  const addDeviceAt = (type, world) => {
+    const p = clampToWorld(world);
     const id = `n${doc.seq}`;
     dispatch({ type: 'add', nodeType: type, x: p.x, y: p.y });
     setNewNodeId(id);
     setSelection({ nodes: [id], edge: null });
   };
 
-  const tapDevice = (type) => {
-    const p = nextFreeSpot(doc.nodes, size);
-    addDevice(type, p.x, p.y);
-  };
+  /** The dock reports where a device was dropped on the stage; devices live in the world. */
+  const addDevice = (type, x, y) => addDeviceAt(type, toWorld(view, { x, y }));
+
+  /** Tapping a dock tile puts the device where you are looking. */
+  const tapDevice = (type) => addDeviceAt(type, nextFreeSpotIn(doc.nodes, usableWorldRect(view, size)));
 
   const removeNodes = (ids) => {
     dispatch({ type: 'remove', ids });
@@ -172,10 +181,29 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
     setLinkFrom(id);
   };
 
+  /* ---------- Moving around ---------- */
+
+  const centre = { x: size.width / 2, y: size.height / 2 };
+  const changeView = (next) => {
+    setView(next);
+    dismiss('move');
+  };
+  const zoomBy = (factor) => changeView(limitView(zoomAt(view, factor, centre), size));
+  const actualSize = () => changeView(limitView(zoomTo(view, 1, centre), size));
+  const fit = () => changeView(fitView(doc.nodes, size));
+  const panView = (dx, dy) => changeView(limitView(panBy(view, dx, dy), size));
+  const toggleSidebar = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    saveUiPrefs({ sidebarCollapsed: next });
+  };
+
   const selectAll = () => setSelection({ nodes: doc.nodes.map((n) => n.id), edge: null });
 
   const loadDoc = (next) => {
-    dispatch({ type: 'load', doc: fitToBounds(normalizeDoc(next), size) });
+    const loaded = normalizeDoc(next);
+    dispatch({ type: 'load', doc: loaded });
+    setView(fitView(loaded.nodes, size));
     setSelection(NO_SELECTION);
     setLinkFrom(null);
     closeEditor();
@@ -196,6 +224,12 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
     hasSelection: selection.nodes.length > 0 || Boolean(selection.edge),
     chooseTool,
     toggleCable: () => setCable((c) => (c === 'straight' ? 'crossover' : 'straight')),
+    zoomIn: () => zoomBy(ZOOM_STEP),
+    zoomOut: () => zoomBy(1 / ZOOM_STEP),
+    actualSize,
+    fit,
+    pan: panView,
+    toggleSidebar,
     clear: () => {
       setSelection(NO_SELECTION);
       chooseTool('select');
@@ -233,6 +267,24 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
       } else if (!mod && !e.altKey && key === 'e' && k.hasSelection) {
         e.preventDefault();
         k.editSelection();
+      } else if (!mod && !e.altKey && (key === '+' || key === '=')) {
+        e.preventDefault();
+        k.zoomIn();
+      } else if (!mod && !e.altKey && (key === '-' || key === '_')) {
+        e.preventDefault();
+        k.zoomOut();
+      } else if (!mod && !e.altKey && key === '0') {
+        k.fit();
+      } else if (!mod && !e.altKey && key === '1') {
+        k.actualSize();
+      } else if (!mod && !e.altKey && key === 'p') {
+        k.toggleSidebar();
+      } else if (!mod && key.startsWith('arrow')) {
+        // Arrow keys move the view, unless a device has focus: then they nudge it, and that has already been handled.
+        e.preventDefault();
+        const step = e.shiftKey ? 240 : 80;
+        const [dx, dy] = { arrowleft: [step, 0], arrowright: [-step, 0], arrowup: [0, step], arrowdown: [0, -step] }[key] ?? [0, 0];
+        k.pan(dx, dy);
       } else if (e.key === 'Escape') {
         k.clear();
       }
@@ -247,8 +299,14 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
   const hint = dismissed && !disabled && !editorOpen && !popoverEdge && tool === 'select' ? nextHint(doc, dismissed) : null;
 
   return (
-    <div className="sx-bench">
-      <div className="sx-stage" ref={stageRef} data-disabled={disabled} data-tool={tool}>
+    <div className="sx-bench" data-collapsed={collapsed}>
+      <div
+        className="sx-stage"
+        ref={stageRef}
+        data-disabled={disabled}
+        data-tool={tool}
+        style={{ '--vx': `${view.x}px`, '--vy': `${view.y}px`, '--grid': `${(view.k < 0.5 ? 48 : 24) * view.k}px` }}
+      >
         <NetworkCanvas
           doc={doc}
           dispatch={dispatch}
@@ -262,6 +320,8 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
           setLinkFrom={setLinkFrom}
           cable={cable}
           trace={trace}
+          view={view}
+          onView={changeView}
           onEditNodes={openEditor}
           onEditLink={openPopover}
           onLinkRejected={(message) => toast.show(message)}
@@ -298,6 +358,8 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
           }}
           disabled={disabled}
           extra={toolbarExtra}
+          sidebarCollapsed={collapsed}
+          onToggleSidebar={toggleSidebar}
         />
 
         {status && <p className="sx-glass sx-stage__status" role="status">{status}</p>}
@@ -315,6 +377,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
             doc={doc}
             selection={selection}
             size={size}
+            view={view}
             onEditNodes={openEditor}
             onEditLink={openPopover}
             onLink={startLink}
@@ -323,8 +386,12 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
         )}
 
         {popoverEdge && (
-          <LinkPopover doc={doc} edgeId={popoverEdge} size={size} disabled={disabled} dispatch={dispatch} onClose={closePopover} onRemove={removeEdge} />
+          <LinkPopover doc={doc} edgeId={popoverEdge} size={size} view={view} disabled={disabled} dispatch={dispatch} onClose={closePopover} onRemove={removeEdge} />
         )}
+
+        {collapsed && collapsedExtra}
+
+        <ZoomControls view={view} onZoomIn={() => zoomBy(ZOOM_STEP)} onZoomOut={() => zoomBy(1 / ZOOM_STEP)} onActualSize={actualSize} onFit={fit} hasNodes={doc.nodes.length > 0} />
 
         <DeviceDock
           types={palette}

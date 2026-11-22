@@ -45,7 +45,8 @@
   border-radius: var(--r-xl);
   background-color: var(--canvas);
   background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1.2px);
-  background-size: 24px 24px;
+  background-size: var(--grid, 24px) var(--grid, 24px);
+  background-position: var(--vx, 0px) var(--vy, 0px);
   box-shadow: var(--shadow-1), 0 0 0 0.5px var(--separator);
 }
 
@@ -68,6 +69,11 @@
   box-shadow: var(--shadow-1), 0 0 0 0.5px var(--separator);
 }
 
+/* With the side panel hidden, the canvas has the whole width. The panel stays mounted (so a packet in flight
+   keeps going), it is just not shown. */
+.sx-bench[data-collapsed='true'] { grid-template-columns: minmax(0, 1fr); }
+.sx-bench[data-collapsed='true'] .sx-side { display: none; }
+
 @media (max-width: 960px) {
   .sx-bench { grid-template-columns: 1fr; height: auto; min-height: 0; }
   .sx-stage { height: 72dvh; min-height: 520px; }
@@ -83,7 +89,9 @@
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  cursor: grab;
 }
+.sx-canvas[data-panning='true'] { cursor: grabbing; }
 .sx-stage[data-disabled='true'] .sx-canvas { pointer-events: none; opacity: 0.55; transition: opacity 0.4s; }
 .sx-stage[data-tool='link'] .sx-node { cursor: crosshair; }
 
@@ -151,6 +159,7 @@
 /* ---------- Toolbar ---------- */
 
 .sx-toolbar {
+  z-index: 30; /* above the floating action bar, popover and hints, so the menus that drop from it are never covered */
   position: absolute;
   top: 16px;
   left: 16px;
@@ -496,3 +505,24 @@
   .sx-hint .sx-btn { margin-left: auto; }
   .sx-popover { width: min(300px, calc(100% - 16px)); }
 }
+
+/* ---------- Zoom controls and the compact session ---------- */
+
+.sx-zoom { position: absolute; z-index: 12; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px; }
+.sx-zoom .sx-iconbtn { border-radius: 999px; width: 36px; height: 36px; }
+.sx-zoom__level { min-width: 52px; height: 36px; padding: 0 8px; border: 0; border-radius: 999px; background: transparent; color: var(--label); font-size: 0.875rem; font-weight: 600; transition: background-color 0.2s; }
+.sx-zoom__level:hover { background: var(--accent-tint); color: var(--accent); }
+.sx-zoom__fit { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px 0 10px; border: 0; border-radius: 999px; background: var(--accent-tint); color: var(--accent); font-size: 0.875rem; font-weight: 600; transition: transform 0.45s var(--spring-snappy), opacity 0.2s; }
+.sx-zoom__fit:active { transform: scale(0.95); transition-duration: 0.1s; }
+.sx-zoom__fit[disabled] { opacity: 0.4; pointer-events: none; }
+/* On a narrow stage the dock takes the whole bottom, so the zoom controls stand up at the side, above it. */
+@media (max-width: 760px) {
+  .sx-zoom { flex-direction: column; right: 10px; bottom: 112px; border-radius: 22px; }
+  .sx-zoom__fit span { display: none; }
+  .sx-zoom__fit { width: 36px; padding: 0; justify-content: center; }
+}
+
+/* With the side panel hidden, a timed scenario keeps its clock and its Check button on the canvas. */
+.sx-minisession { position: absolute; z-index: 12; left: 16px; bottom: 16px; display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 14px; border-radius: 999px; }
+.sx-minisession__time { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 1rem; }
+@media (max-width: 760px) { .sx-minisession { bottom: 112px; left: 10px; } }

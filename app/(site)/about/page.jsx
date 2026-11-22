@@ -15,7 +15,13 @@ const SHORTCUTS = [
   ['Ctrl or ⌘ + Z', 'Undo'],
   ['Shift + Ctrl or ⌘ + Z', 'Redo'],
   ['Ctrl or ⌘ + A', 'Select every device'],
-  ['Arrow keys', 'Nudge the selected devices (hold Shift for bigger steps)'],
+  ['Drag the background', 'Move around the canvas (a click on empty canvas lets go of the selection)'],
+  ['Scroll wheel, or pinch', 'Zoom in and out, around the pointer or your fingers'],
+  ['+ and -', 'Zoom in and out'],
+  ['0', 'Fit: zoom and move so every device is in view'],
+  ['1', 'Actual size (100%)'],
+  ['Arrow keys', 'Move the view (Shift for bigger steps). With a device focused, they nudge that device instead'],
+  ['P', 'Hide or show the side panel'],
   ['Esc', 'Clear the selection'],
 ];
 
