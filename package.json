@@ -11,7 +11,11 @@
     "lint": "next lint",
     "test": "node --test",
     "check": "node --test && next lint",
-    "simulate": "next build && next start"
+    "simulate": "next build && next start",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "jspdf": "^2.5.2",
@@ -20,6 +24,7 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.5"
   },

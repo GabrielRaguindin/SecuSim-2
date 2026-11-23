@@ -12,9 +12,6 @@ export default function PoliciesPage() {
       <p className="sx-lead sx-lessons__intro">
         A network policy is a rule about what is allowed on a device or a link. In SecuSim you turn policies on for each device, the same way an administrator would.
       </p>
-      <p className="sx-body sx-lessons__intro">
-        Hubs are the one exception. A hub works at Layer 1: it repeats electrical signals out of every port and never reads an address or a rule, so it can’t hold a policy. Put policies on the routers, PCs and servers around it.
-      </p>
       <section className="sx-lesson sx-lesson--policy sx-lesson--stack" aria-labelledby="path-title">
         <div className="sx-lesson__text">
           <h2 id="path-title" className="sx-title-2">Where a rule applies</h2>

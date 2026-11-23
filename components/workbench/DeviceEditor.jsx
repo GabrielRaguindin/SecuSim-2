@@ -165,8 +165,8 @@ function AddressRow({ node, doc, dispatch, disabled }) {
 function Layer1Note() {
   return (
     <div className="sx-layer1">
-      <p className="sx-callout"><strong>A Layer 1 device</strong></p>
-      <p className="sx-caption">A hub copies every signal it receives out of all its other ports, to everyone. It never reads an address or a rule, so it has no IP address and can’t hold policies. There is nothing else to set here.</p>
+      <p className="sx-callout"><strong>Layer 1 Device</strong></p>
+      <p className="sx-caption">A Hub just broadcasts incoming signal it receives out of every port to all connected devices, it never reads an address or a rule. There is nothing else to set here.</p>
     </div>
   );
 }
