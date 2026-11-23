@@ -23,6 +23,7 @@
 | 2.4.4 Ping mechanics (Answered, No reply, the reply) | COMPLETED | Unit tests with a 3000-network randomized check [V]; every outcome driven in the browser [V] |
 | 2.5.1 Device editor, link popover, action bar, hints, rename; sidebar cleared | COMPLETED | Unit tests [V]; 78 browser checks, including all three built-in scenarios completed through the new editor and a packet flow [V]; touch double-tap on an emulated phone [V] |
 | 2.5.2 Pan and zoom, fit, a hideable side panel, compact clock in timed scenarios | COMPLETED | Unit tests [V]; 66 browser checks against the real built app, including all three scenarios built on the new canvas and a real two-finger pinch [V]; lint and production build clean [V] |
+| **Playwright end-to-end tests in the repository** | **IN PROGRESS** (smoke level done) | `@playwright/test` is installed and `playwright.config.js` and `e2e/smoke.spec.js` are in the repo. The three smoke tests (home to sandbox, add a device, scenario brief opens) **pass against the production build on the project owner's machine** [V, reported by the owner]. The larger flows are **not yet in the repository** (see below) |
 | Results page, PDF export | IN PROGRESS | List, expand and delete verified [V]. **PDF download not exercised** (jsPDF was stubbed in the harness); text sanitiser tested [V] |
 | Learn pages and packet demo | COMPLETED | Rendered and the packet animation ran [V] |
 | Design system, light and dark, phone layout | COMPLETED | Screenshots reviewed for every page [V] |
@@ -32,12 +33,26 @@
 
 `npm run lint` reported no ESLint warnings or errors, and `npm run build` compiled, type-checked and generated all 19 pages (Next.js 14.2.5), run on the owner's checkout after Patch 2.5.1 [V, reported by the owner]. The patches have been applied to the GitHub repository.
 
+Playwright was installed and configured on the owner's checkout, and the smoke tests passed there [V, reported by the owner]. The test count and the browser projects (Chromium, and the phone project if it was kept) were not recorded in this file.
+
+## Playwright is integrated
+
+End-to-end tests now live in the repository, separate from the unit tests (see `docs/e2e-testing.md`):
+
+- `playwright.config.js` at the root starts the production server on port 3100 and sets the base URL.
+- `e2e/*.spec.js` holds the browser tests. `tests/*.test.js` keeps the unit tests and still runs with `npm test`.
+- `npm run test:e2e` runs the browser tests. `npm test` is unchanged.
+
+**Working rule from here on:** a patch that changes what a user sees or does adds or updates an `e2e/` spec for it, and `npm run test:e2e` joins lint, the production build and `npm test` in the gate before the patch is called delivered. The older browser scripts used during development (pan, zoom, editor, all three scenarios, the two-finger pinch) were sandbox-specific and are **not** in the repository. Until they are ported, those flows count as verified in development only, not as protected by the repository's tests.
+
 ## Not verified
 
-1. **Browsers other than Chromium** [U]: Safari and Firefox untested. Check the spring curves, `backdrop-filter` and touch dragging.
+1. **Browsers other than Chromium** [U]: Safari and Firefox untested. Check the spring curves, `backdrop-filter` and touch dragging. Playwright can run Firefox and WebKit once they are added as projects, which is the cheapest first step.
 2. **Real touch hardware** [U]: touch was emulated.
 3. **PDF output** [U], as above.
 4. **Hydration in a real browser** [U]: geometry is rounded to avoid mismatches. The production build prerendered every page without errors, which covers server rendering.
+5. **The GitHub Actions workflow for the e2e tests** [U]: it has been written but its first run on GitHub has not been confirmed. Until it is green in the Actions tab, the e2e tests are only known to pass locally.
+6. **Flows beyond the three smoke tests** [U]: no e2e spec yet covers pan and zoom, the device editor, the link popover, packets, custom scenarios, or building the three scenarios.
 
 ## Patch 2.5.2 is delivered
 
@@ -59,12 +74,14 @@ None waiting. The 2.0 sign-off decisions were confirmed by the project owner and
 
 | Priority | Action |
 |---|---|
-| P1 | Add Playwright tests to the repo that run against `next dev` (the flows in this file marked [V] are the script) |
-| P1 | Test on Safari, Firefox and a real phone; download a PDF and open it |
+| P1 | Confirm the e2e GitHub Actions workflow is green on its first run |
+| P1 | Port the development browser flows into `e2e/` as specs: pan and zoom, the device editor, the link popover, packets, and all three scenarios built through the UI |
+| P1 | Add Firefox and WebKit projects to `playwright.config.js` and run the suite on them |
+| P1 | Test on a real phone; download a PDF and open it |
 | P1 | Screen-reader pass on the canvas, the device editor, the link popover and sheets |
 | P2 | Deploy (nothing server-side is needed, so any static or Node host works) and set `NEXT_PUBLIC_SITE_URL` |
-| P2 | 2.1 candidates: marquee selection, drag-to-dismiss sheets, pan and zoom, per-policy lessons |
+| P2 | 2.1 candidates: marquee selection, drag-to-dismiss sheets, per-policy lessons |
 
 ## Recommended next step
 
-Finish Patch 2.5 (2.5.3: toolbar labels, then the simulator, phone layout and keyboard pass), and have testers try the new editor and canvas. Their feedback decides whether one-click fixes or reachability requirements come next.
+Finish Patch 2.5 (2.5.3: toolbar labels, then the simulator, phone layout and keyboard pass), with an e2e spec for each thing 2.5.3 changes, and have testers try the new editor and canvas. Their feedback decides whether one-click fixes or reachability requirements come next.
