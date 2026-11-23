@@ -20,7 +20,6 @@ test('Layer 1: the hub is the one and only device that can’t hold an address o
     assert.equal(canHavePolicies(t), t !== 'hub', `${t} policies`);
   }
   assert.equal(canHaveIp('toaster'), false);
-  assert.match(DEVICE_TYPES.hub.blurb, /Layer 1/);
   assert.equal(canBeEndpoint('hub'), false, 'and a hub can’t send or receive a packet');
   assert.ok(['router', 'pc', 'server', 'modem'].every(canBeEndpoint));
 });

@@ -16,12 +16,12 @@ const SPECIAL = [
 ];
 
 const WHO = {
-  router: 'Yes. It joins networks together, so it has an address on the network it serves.',
+  router: 'Yes. It connects different networks and directs traffic between them, so it needs an address on each network it links.',
   pc: 'Yes. Every computer needs an address to send and receive data.',
-  server: 'Yes. Other devices need a steady address to find it.',
-  modem: 'Yes. It has an address so it can be managed and can reach the internet provider.',
-  switch: 'Yes. This is a managed switch: it has an address so an administrator can reach it, and it can hold policies. (A basic unmanaged switch has neither.)',
-  hub: 'No. A hub works at Layer 1: it repeats electrical signals out of every port and never reads an address. It can’t hold a policy either.',
+  server: 'Yes. It provides data and services to other devices. It needs a reliable, consistent address to be reached.',
+  modem: 'Yes. It bridges a network to the internet, requiring an address to communicate with the provider.',
+  switch: 'Yes. A managed switch connects multiple devices together within a network and has the capacity to hold an address.',
+  hub: 'No. It just repeats incoming electrical signals out of every port to all connected devices without reading addresses.',
 };
 
 export default function AddressingPage() {
@@ -77,7 +77,7 @@ export default function AddressingPage() {
       <section className="sx-lesson sx-lesson--policy" aria-labelledby="who-title">
         <div className="sx-lesson__text">
           <h2 id="who-title" className="sx-title-1">Which devices get an address?</h2>
-          <p className="sx-lead">Every device except the hub.</p>
+          <p className="sx-lead">Every device except the Hub.</p>
           <p className="sx-body">An address is read by the device that owns it. A hub never reads one: it works at the physical layer, so it just passes signals along. In SecuSim, hubs are the only devices that can’t be given an address or a policy.</p>
         </div>
         <ul className="sx-controls" aria-label="Which devices have an address">
