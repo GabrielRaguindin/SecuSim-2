@@ -46,7 +46,12 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
   const [collapsed, setCollapsed] = useState(false); // is the side panel hidden?
   const [popoverEdge, setPopoverEdge] = useState(null);
   const [dismissed, setDismissed] = useState(null); // null until read from storage, so no hint flashes first
+  const [ready, setReady] = useState(false);
   const editorOpen = Boolean(editor?.open);
+
+  useEffect(() => {
+    setReady(true);
+  }, []); 
 
   /* Track the stage size so devices stay inside it. */
   useEffect(() => {
@@ -299,7 +304,7 @@ export default function Workbench({ net, toast, disabled = false, palette, toolb
   const hint = dismissed && !disabled && !editorOpen && !popoverEdge && tool === 'select' ? nextHint(doc, dismissed) : null;
 
   return (
-    <div className="sx-bench" data-collapsed={collapsed}>
+    <div className="sx-bench" data-collapsed={collapsed} data-ready={ready}>
       <div
         className="sx-stage"
         ref={stageRef}
