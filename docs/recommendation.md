@@ -77,9 +77,13 @@ Delivered in smaller patches, like 2.4.
 * **Collapsible side panel:** a button (or P) hides it for a full-width canvas. The choice is remembered. In a timed scenario the clock and the Check button move onto the canvas while the panel is hidden.
 * *(This replaces the old "Enhanced Canvas" item, which is no longer listed under Upcoming patches.)*
 
-**2.5.3: Make what's left fast, polish and verify. (Planned)**
-* Labels on the toolbar icons, which are cryptic and have no hover on touch.
-* A pass over the simulator, the phone layout (the top-left toolbar is wider than a phone screen, so Undo and Redo are cut off) and keyboard use.
+**2.5.3: Toolbar labels and the phone toolbar. (Implemented)**
+* **Captions** under the toolbar icons that were cryptic and had no hover on touch: Select all, Assign IP, Delete, Clear, Library (sandbox) and Hide/Show panel.
+* **Phone toolbar fix:** the toolbar groups now wrap and are limited to the width of the canvas, so Undo and Redo are no longer cut off at 390px or 412px.
+* Covered by `e2e/toolbar.spec.js`. See `docs/toolbar.md`.
+
+**2.5.4: Simulator and keyboard pass. (Planned)**
+* A pass over the simulator and keyboard use, split from 2.5.3 to keep the patches small.
 
 **Later (agreed to wait so the patches stay small):**
 * **One-click fixes** in the packet result: the "To fix it" line becomes a button the learner chooses to press (turn on a policy, change a cable).

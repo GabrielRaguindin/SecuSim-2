@@ -134,8 +134,9 @@ export default function Sandbox() {
         toolbarExtra={
           <>
             <span className="sx-toolbar__divider" aria-hidden="true" />
-            <button type="button" className="sx-btn sx-btn--sm sx-btn--tint" onClick={() => setLibraryOpen(true)}>
-              <Icon name="folder" size={18} /> Library
+            <button type="button" className="sx-iconbtn sx-iconbtn--labeled" onClick={() => setLibraryOpen(true)}>
+              <Icon name="folder" />
+              <span className="sx-iconbtn__label">Library</span>
             </button>
           </>
         }

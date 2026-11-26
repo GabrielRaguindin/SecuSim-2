@@ -30,7 +30,7 @@ function AutoIpMenu({ onPick, disabled }) {
     <span ref={wrap}>
       <button
         type="button"
-        className="sx-iconbtn"
+        className="sx-iconbtn sx-iconbtn--labeled"
         aria-label="Assign IP addresses"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -39,6 +39,7 @@ function AutoIpMenu({ onPick, disabled }) {
         onClick={() => setOpen((o) => !o)}
       >
         <Icon name="zap" />
+        <span className="sx-iconbtn__label" aria-hidden="true">Assign IP</span>
       </button>
       {open && (
         <div className="sx-menu" role="menu" aria-label="Assign IP addresses">
@@ -92,27 +93,31 @@ export default function Toolbar({ tool, setTool, cable, setCable, canUndo, canRe
       </div>
 
       <div className="sx-glass sx-toolbar__group" role="toolbar" aria-label="Actions">
-        <button type="button" className="sx-iconbtn" onClick={onSelectAll} disabled={disabled || !hasNodes} aria-label="Select all devices" title="Select all devices (Ctrl or ⌘ A)">
+        <button type="button" className="sx-iconbtn sx-iconbtn--labeled" onClick={onSelectAll} disabled={disabled || !hasNodes} aria-label="Select all devices" title="Select all devices (Ctrl or ⌘ A)">
           <Icon name="selectAll" />
+          <span className="sx-iconbtn__label" aria-hidden="true">Select all</span>
         </button>
         <AutoIpMenu onPick={onAutoIps} disabled={disabled || !hasNodes} />
-        <button type="button" className="sx-iconbtn" onClick={onDelete} disabled={disabled || !canDelete} aria-label="Delete selection" title="Delete selection (Delete)">
+        <button type="button" className="sx-iconbtn sx-iconbtn--labeled" onClick={onDelete} disabled={disabled || !canDelete} aria-label="Delete selection" title="Delete selection (Delete)">
           <Icon name="trash" />
+          <span className="sx-iconbtn__label" aria-hidden="true">Delete</span>
         </button>
-        <button type="button" className="sx-iconbtn" onClick={onClear} disabled={disabled || !hasNodes} aria-label="Clear the canvas" title="Clear the canvas">
+        <button type="button" className="sx-iconbtn sx-iconbtn--labeled" onClick={onClear} disabled={disabled || !hasNodes} aria-label="Clear the canvas" title="Clear the canvas">
           <Icon name="reset" />
+          <span className="sx-iconbtn__label" aria-hidden="true">Clear</span>
         </button>
         {extra}
         <span className="sx-toolbar__divider" aria-hidden="true" />
         <button
           type="button"
-          className="sx-iconbtn"
+          className="sx-iconbtn sx-iconbtn--labeled"
           onClick={onToggleSidebar}
-          aria-label={sidebarCollapsed ? 'Show the side panel' : 'Hide the side panel'}
+          aria-label={sidebarCollapsed ? 'Show panel' : 'Hide panel'}
           aria-pressed={sidebarCollapsed}
           title={sidebarCollapsed ? 'Show the side panel (P)' : 'Hide the side panel for more room (P)'}
         >
           <Icon name="panelRight" />
+          <span className="sx-iconbtn__label" aria-hidden="true">{sidebarCollapsed ? 'Show panel' : 'Hide panel'}</span>
         </button>
       </div>
     </div>

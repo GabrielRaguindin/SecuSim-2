@@ -1,9 +1,9 @@
 # SecuSim 2.0: Project Structure
 
-> **Generated:** from the 2.5.2 working tree plus the Playwright integration. The 2.5.2 listing had 118 files, about 8553 lines of source and styles and about 3049 lines of tests, as measured then. This regeneration adds `playwright.config.js`, `e2e/smoke.spec.js`, `.github/workflows/e2e.yml` and `docs/e2e-testing.md` (four files) and lists `package.json`. **File and line counts were not re-measured.**
+> **Generated:** from the repository as uploaded after Patch 2.5.2 and the Playwright integration, plus Patch 2.5.3. **Measured on the working tree [V]:** 124 files (not counting `package-lock.json`), about 8575 lines of source and styles, about 3048 lines of unit tests and about 83 lines of end-to-end tests.
 > **Evidence tags:** **[V]** verified by running it · **[R]** verified by reading the code · **[U]** unverified.
 > Not written to GitHub by the assistant (it has no repository connection). Each patch is applied to the repository by the project owner.
-> The Playwright entries in the tree come from files the owner pasted. The tree was not regenerated from the repository itself, so `git ls-files` remains the authority.
+> The tree was checked against the uploaded repository (`SecuSim-2-master`): it matched the previous listing exactly, apart from `package-lock.json`. The two files added by Patch 2.5.3 are `docs/toolbar.md` and `e2e/toolbar.spec.js`. `git ls-files` remains the authority.
 
 ## Stack [R]
 
@@ -94,8 +94,10 @@ docs/progress.md
 docs/project-structure.md
 docs/recommendation.md
 docs/switch.md
+docs/toolbar.md
 docs/transit-filtering.md
 e2e/smoke.spec.js
+e2e/toolbar.spec.js
 jsconfig.json
 lib/cabling.js
 lib/customScenarios.js
@@ -175,12 +177,13 @@ tests/view.test.js
 | IP classes and cabling | `lib/ip.js`, `lib/cabling.js`, `components/workbench/AddressPlan.jsx` |
 | Sending a packet: route, hub copies, storms, filtering on the way, ping replies | `lib/packets.js`, `components/sandbox/PacketPanel.jsx`, `components/workbench/NetworkCanvas.jsx` |
 | Design system | `styles/tokens.css`, `styles/ui.css`, `styles/workbench.css`, `styles/builder.css` |
+| Toolbar captions and the phone toolbar | `components/workbench/Toolbar.jsx`, `components/sandbox/Sandbox.jsx`, `styles/workbench.css`, `docs/toolbar.md` |
 | End-to-end tests and CI | `playwright.config.js`, `e2e/*.spec.js`, `.github/workflows/e2e.yml`, `docs/e2e-testing.md` |
 
 ## Testing
 
 - **Unit tests [V]:** `npm test` runs **238** tests, all passing when last measured (at Patch 2.5.2).
   - Covered: graph helpers, the pan and zoom maths, renaming, the editor's policy counts, where overlays sit, first-use hints, IP validation and classes, cabling, spring maths, the reducer and history, every built-in scenario (reference solutions plus a regression for each 1.x bug), custom scenarios, the Layer 1 hub rule, the Switch, packet tracing (routes, hub copies, broadcast storms, filtering on the way, ping replies, with seeded randomized checks against independent statements of the rules), storage (with a fake store), diagram layouts, PDF text.
-- **End-to-end tests [V, reported by the owner]:** `npm run test:e2e` runs three smoke tests (home to sandbox, add a device, scenario brief opens) in each configured browser project. They pass against the production build on the owner's machine, and the GitHub Actions workflow ran green on its first push. See `docs/e2e-testing.md`.
+- **End-to-end tests [V, reported by the owner]:** `npm run test:e2e` runs the smoke tests (home to sandbox, add a device, scenario brief opens) and, since Patch 2.5.3, the toolbar tests (`e2e/toolbar.spec.js`, 7 tests) in each configured browser project. They pass against the production build on the owner's machine, and the GitHub Actions workflow ran green on its first push. See `docs/e2e-testing.md`.
 - **Hardening [V, reported by the owner]:** a hardened `playwright.config.js` and workflow, and a `data-ready` hydration marker on `Workbench` that the smoke test waits for, are applied and working on the owner's machine.
 - **Not covered by tests in the repository [U]:** components and flows beyond the smoke tests. Pan and zoom, the device editor, the link popover, packets, custom scenarios, the three built-in scenarios built through the UI, and the PDF download were exercised in a headless Chromium harness during development (see `progress.md`), but that harness is not shipped.

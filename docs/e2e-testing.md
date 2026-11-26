@@ -11,6 +11,7 @@ Unit tests check the logic in `lib/`. End-to-end (e2e) tests open the real built
 playwright.config.js        Root. Browsers, base URL, retries, and how the server starts
 e2e/                        Playwright specs, named *.spec.js
   smoke.spec.js             Three smoke tests (below)
+  toolbar.spec.js           Seven toolbar tests: captions, nothing cut off at four widths, Undo and Redo on a phone
 tests/                      Unit tests, named *.test.js, run by `node --test`
 .github/workflows/e2e.yml   CI: unit tests, then e2e tests, on push and pull request
 playwright-report/          Generated HTML report (git-ignored)
@@ -93,7 +94,7 @@ A patch that changes what a user sees or does adds or updates an `e2e/` spec for
 
 ## What is and is not protected today
 
-**Protected by tests in the repository:** the build starts, the home, sandbox and scenario routes render, a device can be added, and a scenario brief opens (the three smoke tests, passing locally and on GitHub Actions [V, reported by the owner]).
+**Protected by tests in the repository:** the build starts, the home, sandbox and scenario routes render, a device can be added, and a scenario brief opens (the three smoke tests, passing locally and on GitHub Actions [V, reported by the owner]). Since Patch 2.5.3, the toolbar captions and the toolbar layout on phone widths are protected by `e2e/toolbar.spec.js` [V in the development environment; not yet run on the owner's machine or on GitHub].
 
 **Verified during development only, not yet in `e2e/`** [U as repository tests]:
 
