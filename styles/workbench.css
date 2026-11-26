@@ -171,17 +171,31 @@
 }
 .sx-toolbar__group {
   display: flex;
+  flex-wrap: wrap; /* a group never runs off the stage: its buttons wrap onto a second line instead */
   align-items: center;
   gap: 2px;
+  max-width: 100%;
   padding: 4px;
   border-radius: 999px;
   pointer-events: auto;
 }
 .sx-toolbar__group .sx-iconbtn { border-radius: 999px; width: 38px; height: 38px; }
+/* Buttons whose icon alone is cryptic carry a short caption under it, so touch screens (no hover) can read them. */
+.sx-toolbar__group .sx-iconbtn--labeled { display: inline-flex; flex-direction: column; justify-content: center; gap: 2px; width: auto; min-width: 58px; height: 50px; padding: 4px 6px; border-radius: 16px; }
+.sx-iconbtn__label { font-size: 0.6875rem; font-weight: 600; line-height: 1.1; letter-spacing: 0; white-space: nowrap; }
 .sx-toolbar__divider { width: 1px; height: 22px; margin: 0 6px; background: var(--separator); }
 
 @media (max-width: 640px) {
   .sx-toolbar { flex-direction: column; align-items: flex-start; }
+  /* A group that wraps is no longer a single line, so it takes softer corners than a pill. */
+  .sx-toolbar__group { border-radius: 26px; }
+  /* The word "Cable" and the divider are the first things to go, so Undo and Redo keep their place in the first row. */
+  .sx-cablesel__label { display: none; }
+  .sx-toolbar__group > .sx-toolbar__divider { display: none; }
+  /* Snugger buttons, so the tools fit one row on a 390px phone. */
+  .sx-toolbar__group .sx-iconbtn:not(.sx-iconbtn--labeled) { width: 36px; height: 36px; }
+  .sx-toolbar__group .sx-iconbtn--labeled { min-width: 44px; padding: 4px 2px; }
+  .sx-toolbar__group .sx-cablesel__btn { padding: 6px 9px; }
 }
 
 /* ---------- Device dock ---------- */

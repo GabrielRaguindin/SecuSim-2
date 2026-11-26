@@ -23,6 +23,7 @@
 | 2.4.4 Ping mechanics (Answered, No reply, the reply) | COMPLETED | Unit tests with a 3000-network randomized check [V]; every outcome driven in the browser [V] |
 | 2.5.1 Device editor, link popover, action bar, hints, rename; sidebar cleared | COMPLETED | Unit tests [V]; 78 browser checks, including all three built-in scenarios completed through the new editor and a packet flow [V]; touch double-tap on an emulated phone [V] |
 | 2.5.2 Pan and zoom, fit, a hideable side panel, compact clock in timed scenarios | COMPLETED | Unit tests [V]; 66 browser checks against the real built app, including all three scenarios built on the new canvas and a real two-finger pinch [V]; lint and production build clean [V] |
+| 2.5.3 Toolbar captions, phone toolbar no longer cut off | COMPLETED | Lint clean, production build, 238 unit tests and the new e2e spec run 42 times (7 tests x 2 projects x 3 repeats), all passed in the development environment [V]; the new spec fails against the code from before the patch [V]; **not yet run on the owner's machine or on GitHub [U]** |
 | **Playwright end-to-end tests in the repository** | **IN PROGRESS** (smoke level done) | `@playwright/test` is installed and `playwright.config.js` and `e2e/smoke.spec.js` are in the repo. The three smoke tests (home to sandbox, add a device, scenario brief opens) **pass against the production build on the project owner's machine, and the GitHub Actions workflow ran green on its first push** [V, reported by the owner]. The larger flows are **not yet in the repository** (see below) |
 | Results page, PDF export | IN PROGRESS | List, expand and delete verified [V]. **PDF download not exercised** (jsPDF was stubbed in the harness); text sanitiser tested [V] |
 | Learn pages and packet demo | COMPLETED | Rendered and the packet animation ran [V] |
@@ -52,7 +53,11 @@ End-to-end tests now live in the repository, separate from the unit tests (see `
 2. **Real touch hardware** [U]: touch was emulated.
 3. **PDF output** [U], as above.
 4. **Hydration in a real browser** [U]: geometry is rounded to avoid mismatches. The production build prerendered every page without errors, which covers server rendering.
-5. **Flows beyond the three smoke tests** [U]: no e2e spec yet covers pan and zoom, the device editor, the link popover, packets, custom scenarios, or building the three scenarios.
+5. **Flows beyond the smoke and toolbar specs** [U]: no e2e spec yet covers pan and zoom, the device editor, the link popover, packets, custom scenarios, or building the three scenarios.
+
+## Patch 2.5.3 is delivered
+
+The toolbar's cryptic icons now carry captions, and the toolbar groups wrap instead of running off the canvas, so Undo and Redo are no longer cut off on a 390px or 412px phone (see `docs/toolbar.md`). The simulator and keyboard pass moves to 2.5.4. `e2e/toolbar.spec.js` adds 7 tests per browser project. **From this patch on, the browser tests are also run in the development environment against a clean install of the repository.** Real phone hardware is still untested [U].
 
 ## Patch 2.5.2 is delivered
 
@@ -83,4 +88,4 @@ None waiting. The 2.0 sign-off decisions were confirmed by the project owner and
 
 ## Recommended next step
 
-Finish Patch 2.5 (2.5.3: toolbar labels, then the simulator, phone layout and keyboard pass), with an e2e spec for each thing 2.5.3 changes, and have testers try the new editor and canvas. Their feedback decides whether one-click fixes or reachability requirements come next.
+Finish Patch 2.5 (2.5.4: the simulator and keyboard pass), with an e2e spec for each thing it changes, and have testers try the new editor and canvas. Their feedback decides whether one-click fixes or reachability requirements come next.
